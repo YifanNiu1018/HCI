@@ -11,6 +11,13 @@ Page({
       this.setData({
         items: [...this.data.items, ...more]
       });
-    }
+    },
+    goDetail(e: WechatMiniprogram.BaseEvent) {
+        const id = (e.currentTarget as any).dataset.id
+      
+        wx.navigateTo({
+          url: `/pages/detail/detail?id=${id}`
+        })
+      }
   });
   

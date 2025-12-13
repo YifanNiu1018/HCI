@@ -24,7 +24,9 @@
 <!-- 推荐内容流（不再使用 scroll-view） -->
 <view class="feed-grid">
   <block wx:for="{{items}}" wx:key="index">
-    <view class="feed-card">
+    <view class="feed-card"
+    bindtap="goDetail"
+    data-id="{{index}}">
       <view class="card-img"></view>
       <view class="card-title">示例菜品 {{index + 1}}</view>
     </view>

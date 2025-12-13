@@ -1,0 +1,15 @@
+<view class="page">
+
+<!-- 顶部栏 -->
+<view class="top-bar">
+  <view class="back-btn" bindtap="goBack">←</view>
+</view>
+
+<!-- 中心占位内容 -->
+<view class="placeholder">
+  <text class="placeholder-text">
+    编辑页占位内容
+  </text>
+</view>
+
+</view>

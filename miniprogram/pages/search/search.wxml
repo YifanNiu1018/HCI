@@ -1,5 +1,10 @@
 <view class="page">
 
+<!-- 顶部占位导航栏（对齐微信胶囊） -->
+<view class="nav-placeholder">
+  <view class="nav-title">搜索</view>
+</view>
+
 <!-- 搜索模式切换栏 -->
 <view class="search-mode-bar">
   <view
@@ -18,10 +23,47 @@
   </view>
 </view>
 
-<!-- 占位内容区 -->
-<view class="search-placeholder">
-  <text wx:if="{{mode === 'recipe'}}">搜菜谱 占位区域</text>
-  <text wx:elif="{{mode === 'ingredient'}}">搜食材 占位区域</text>
+<!-- 搜索栏 -->
+<view class="search-bar">
+  <view class="search-input">
+    <text wx:if="{{mode === 'recipe'}}">搜索菜谱</text>
+    <text wx:elif="{{mode === 'ingredient'}}">按食材搜索</text>
+  </view>
+</view>
+
+<!-- 热搜推荐 -->
+<view class="hot-search">
+
+<view class="hot-title">大家都在搜</view>
+
+<!-- 热搜菜谱 -->
+<view wx:if="{{mode === 'recipe'}}" class="hot-recipes">
+  <view class="hot-item"><text class="idx">1</text> 红烧肉</view>
+  <view class="hot-item"><text class="idx">2</text> 宫保鸡丁</view>
+  <view class="hot-item"><text class="idx">3</text> 番茄炒蛋</view>
+  <view class="hot-item"><text class="idx">4</text> 麻婆豆腐</view>
+  <view class="hot-item"><text class="idx">5</text> 可乐鸡翅</view>
+  <view class="hot-item"><text class="idx">6</text> 酸辣土豆丝</view>
+  <view class="hot-item"><text class="idx">7</text> 鱼香肉丝</view>
+  <view class="hot-item"><text class="idx">8</text> 西红柿牛腩</view>
+  <view class="hot-item"><text class="idx">9</text> 清蒸鲈鱼</view>
+  <view class="hot-item"><text class="idx">10</text> 蒜蓉西兰花</view>
+</view>
+
+<!-- 热搜食材 -->
+<view wx:elif="{{mode === 'ingredient'}}" class="hot-ingredients">
+  <view class="tag">鸡蛋</view>
+  <view class="tag">西红柿</view>
+  <view class="tag">五花肉</view>
+  <view class="tag">土豆</view>
+  <view class="tag">青椒</view>
+  <view class="tag">牛腩</view>
+  <view class="tag">大蒜</view>
+  <view class="tag">生抽老抽组合</view>
+  <view class="tag">干辣椒段</view>
+  <view class="tag">香菇金针菇混合</view>
+</view>
+
 </view>
 
 </view>

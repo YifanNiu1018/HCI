@@ -11,7 +11,9 @@
 >
   <view class="feed-list">
     <block wx:for="{{items}}" wx:key="index">
-      <view class="feed-item">
+      <view class="feed-item"
+      bindtap="goDetail"
+      data-id="{{index}}">
         <view class="item-cover"></view>
         <view class="item-content">
             <view class="item-row">
