@@ -1,0 +1,34 @@
+<view class="page">
+
+<!-- 顶部 Banner -->
+<view class="banner">
+  <view class="banner-placeholder">Banner 占位图</view>
+</view>
+
+<!-- 搜索框 -->
+<view class="search-wrapper">
+  <view class="search-box">
+    <text class="search-placeholder">今天想吃点什么？</text>
+  </view>
+</view>
+
+<!-- 分类栏目 -->
+<view class="category-row">
+  <view class="category-item">家常菜</view>
+  <view class="category-item">下饭菜</view>
+  <view class="category-item">早餐</view>
+  <view class="category-item">烘焙</view>
+  <view class="category-item">更多</view>
+</view>
+
+<!-- 推荐内容流（不再使用 scroll-view） -->
+<view class="feed-grid">
+  <block wx:for="{{items}}" wx:key="index">
+    <view class="feed-card">
+      <view class="card-img"></view>
+      <view class="card-title">示例菜品 {{index + 1}}</view>
+    </view>
+  </block>
+</view>
+
+</view>

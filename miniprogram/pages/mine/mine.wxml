@@ -1,0 +1,36 @@
+<view class="page">
+
+<!-- 顶部个人信息区 -->
+<view class="profile-header">
+  <view class="profile-inner">
+    <view class="avatar"></view>
+    <view class="nickname">用户名</view>
+    <view class="signature">这里是个人签名</view>
+  </view>
+</view>
+
+  <!-- 列表标题 / 指示 -->
+  <view class="section-header">
+    <text class="section-title">我的菜谱</text>
+  </view>
+<scroll-view
+  scroll-y="true"
+  class="feed-container"
+  bindscrolltolower="onReachBottom"
+>
+
+  <view class="feed-list">
+    <block wx:for="{{items}}" wx:key="index">
+      <view class="feed-item">
+        <view class="item-cover"></view>
+        <view class="item-content">
+          <view class="item-row">
+            <view class="item-title">上传的菜谱 {{index + 1}}</view>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+</scroll-view>
+
+</view>

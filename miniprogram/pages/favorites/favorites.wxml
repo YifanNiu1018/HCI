@@ -1,0 +1,27 @@
+<view class="page">
+
+<view class="fav-header">
+  <text class="fav-title">我的收藏</text>
+</view>
+
+<scroll-view
+  scroll-y="true"
+  class="feed-container"
+  bindscrolltolower="onReachBottom"
+>
+  <view class="feed-list">
+    <block wx:for="{{items}}" wx:key="index">
+      <view class="feed-item">
+        <view class="item-cover"></view>
+        <view class="item-content">
+            <view class="item-row">
+                <view class="item-title">收藏菜品 {{index + 1}}</view>
+                <view class="item-remove">×</view>
+            </view>
+        </view>
+      </view>
+    </block>
+  </view>
+</scroll-view>
+
+</view>
