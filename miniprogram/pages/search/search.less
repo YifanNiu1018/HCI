@@ -1,17 +1,56 @@
 .page {
+    padding-top: calc(env(safe-area-inset-top) + 44rpx);
+    min-height: 100vh;
+    background: #fff;
     display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;       /* 让占位内容垂直居中 */
-    box-sizing: border-box;
+    flex-direction: column;
   }
   
+  /* 顶部搜索模式切换 */
+  .search-mode-bar {
+    display: flex;
+    height: 88rpx;
+    /* 为右侧给胶囊留白 */
+    padding-left: 40rpx;
+    padding-right: 160rpx;
+    border-bottom: 1rpx solid #eee;
+    background: #fff;
+  
+    .mode-item {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30rpx;
+      color: #999;
+      position: relative;
+    }
+  
+    .mode-item.active {
+      color: #222;
+      font-weight: 500;
+    }
+  
+    .mode-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 48rpx;
+      height: 4rpx;
+      background: #222;
+      border-radius: 2rpx;
+    }
+  }
+  
+  /* 占位搜索内容区 */
   .search-placeholder {
-    text-align: center;
-  }
-  
-  .search-text {
-    font-size: 32rpx;
-    color: #888;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ccc;
+    font-size: 26rpx;
   }
   

@@ -1,5 +1,27 @@
 <view class="page">
-  <view class="search-placeholder">
-    <text class="search-text">搜索页面（占位）</text>
+
+<!-- 搜索模式切换栏 -->
+<view class="search-mode-bar">
+  <view
+    class="mode-item {{mode === 'recipe' ? 'active' : ''}}"
+    data-mode="recipe"
+    bindtap="switchMode"
+  >
+    搜菜谱
   </view>
+  <view
+    class="mode-item {{mode === 'ingredient' ? 'active' : ''}}"
+    data-mode="ingredient"
+    bindtap="switchMode"
+  >
+    按食材
+  </view>
+</view>
+
+<!-- 占位内容区 -->
+<view class="search-placeholder">
+  <text wx:if="{{mode === 'recipe'}}">搜菜谱 占位区域</text>
+  <text wx:elif="{{mode === 'ingredient'}}">搜食材 占位区域</text>
+</view>
+
 </view>
