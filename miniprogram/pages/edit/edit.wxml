@@ -2,7 +2,7 @@
 
 <!-- 顶部栏 -->
 <view class="top-bar">
-  <view class="back-btn" bindtap="goBack">←</view>
+  <view class="back-btn" bindtap="goBack">返回</view>
 </view>
 
 <!-- 中心占位内容 -->

@@ -24,7 +24,7 @@
 </view>
 
 <!-- 搜索栏 -->
-<view class="search-bar">
+<view wx:if="{{mode === 'recipe'}}"class="search-bar">
   <view class="search-input">
     <text wx:if="{{mode === 'recipe'}}">搜索菜谱</text>
     <text wx:elif="{{mode === 'ingredient'}}">按食材搜索</text>
@@ -34,7 +34,9 @@
 <!-- 热搜推荐 -->
 <view class="hot-search">
 
-<view class="hot-title">大家都在搜</view>
+
+<view class="hot-title" wx:if="{{mode === 'recipe'}}">大家都在搜</view>
+    <view class="hot-title" wx:elif="{{mode === 'ingredient'}}">热门食材</view>
 
 <!-- 热搜菜谱 -->
 <view wx:if="{{mode === 'recipe'}}" class="hot-recipes">
