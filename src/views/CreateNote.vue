@@ -161,6 +161,13 @@
           >
             发布笔记
           </el-button>
+          <el-button
+            size="large"
+            :loading="savingDraft"
+            @click="handleSaveDraft"
+          >
+            保存草稿
+          </el-button>
           <el-button size="large" @click="$router.back()">取消</el-button>
         </el-form-item>
       </el-form>
@@ -169,8 +176,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, reactive, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useNotesStore } from '@/stores/notes'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { Plus, Delete } from '@element-plus/icons-vue'
@@ -178,9 +185,12 @@ import { getImageUrl } from '@/utils/image'
 import api from '@/api'
 
 const router = useRouter()
+const route = useRoute()
 const notesStore = useNotesStore()
 const noteFormRef = ref<FormInstance>()
 const newTag = ref('')
+const savingDraft = ref(false)
+const draftId = ref<number | null>(null)
 
 const noteForm = reactive({
   name: '',
@@ -279,6 +289,70 @@ const removeTag = (index: number) => {
   noteForm.tags.splice(index, 1)
 }
 
+// 加载草稿数据
+onMounted(async () => {
+  const draftIdParam = route.query.draftId as string
+  if (draftIdParam) {
+    try {
+      const draft = await notesStore.getNoteById(parseInt(draftIdParam))
+      if (draft && draft.isDraft) {
+        draftId.value = draft.id
+        noteForm.name = draft.name || ''
+        noteForm.description = draft.description || ''
+        noteForm.image = draft.image || ''
+        noteForm.ingredients = draft.ingredients && draft.ingredients.length > 0 
+          ? draft.ingredients 
+          : ['']
+        noteForm.steps = draft.steps && draft.steps.length > 0 
+          ? draft.steps 
+          : ['']
+        noteForm.tags = draft.tags || []
+        noteForm.isPublic = draft.isPublic ?? true
+        ElMessage.info('已加载草稿内容')
+      }
+    } catch (error) {
+      console.error('加载草稿失败:', error)
+    }
+  }
+})
+
+const handleSaveDraft = async () => {
+  savingDraft.value = true
+  try {
+    const data = {
+      name: noteForm.name || undefined,
+      description: noteForm.description || undefined,
+      image: noteForm.image || undefined,
+      ingredients: noteForm.ingredients.filter(i => i.trim()),
+      steps: noteForm.steps.filter(s => s.trim()),
+      tags: noteForm.tags,
+      isPublic: noteForm.isPublic
+    }
+
+    let result
+    if (draftId.value) {
+      // 更新现有草稿
+      result = await notesStore.updateDraft(draftId.value, { ...data, isDraft: true })
+    } else {
+      // 创建新草稿
+      result = await notesStore.saveDraft(data)
+      if (result.success && result.data) {
+        draftId.value = result.data.id
+      }
+    }
+
+    if (result.success) {
+      ElMessage.success('草稿保存成功')
+    } else {
+      ElMessage.error(result.message || '保存草稿失败')
+    }
+  } catch (error) {
+    ElMessage.error('保存草稿失败')
+  } finally {
+    savingDraft.value = false
+  }
+}
+
 const handleSubmit = async () => {
   if (!noteFormRef.value) return
 
@@ -291,7 +365,21 @@ const handleSubmit = async () => {
         ingredients: noteForm.ingredients.filter(i => i.trim()),
         steps: noteForm.steps.filter(s => s.trim()),
         tags: noteForm.tags,
-        isPublic: noteForm.isPublic
+        isPublic: noteForm.isPublic,
+        isDraft: false // 发布时设置为非草稿
+      }
+
+      // 如果是更新草稿，先更新再发布
+      if (draftId.value) {
+        const updateResult = await notesStore.updateDraft(draftId.value, { ...data, isDraft: false })
+        if (updateResult.success) {
+          ElMessage.success('笔记发布成功')
+          router.push('/profile')
+          return
+        } else {
+          ElMessage.error(updateResult.message || '发布失败')
+          return
+        }
       }
 
       const result = await notesStore.createNote(data)

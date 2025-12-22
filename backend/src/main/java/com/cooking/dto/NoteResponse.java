@@ -23,6 +23,7 @@ public class NoteResponse {
     private LocalDateTime createdAt;
     private UserResponse author;
     private Boolean isFavorite;
+    private Boolean isDraft;
 
     public static NoteResponse from(Note note, Boolean isFavorite) {
         NoteResponse response = new NoteResponse();
@@ -37,6 +38,7 @@ public class NoteResponse {
         response.setCreatedAt(note.getCreatedAt());
         response.setAuthor(UserResponse.from(note.getUser()));
         response.setIsFavorite(isFavorite != null ? isFavorite : false);
+        response.setIsDraft(note.getIsDraft() != null ? note.getIsDraft() : false);
         return response;
     }
 

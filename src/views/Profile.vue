@@ -52,6 +52,14 @@
               </span>
             </template>
           </el-tab-pane>
+          <el-tab-pane label="草稿箱" name="drafts">
+            <template #label>
+              <span class="tab-label">
+                <el-icon><EditPen /></el-icon>
+                草稿箱
+              </span>
+            </template>
+          </el-tab-pane>
         </el-tabs>
       </div>
     </el-card>
@@ -239,6 +247,62 @@
         <el-empty v-else description="暂无笔记，快去发布你的做菜笔记吧！" />
       </div>
     </el-card>
+
+    <!-- 草稿箱 -->
+    <el-card v-if="activeTab === 'drafts'" class="content-card">
+      <template #header>
+        <div class="notes-header">
+          <h3>
+            <el-icon><EditPen /></el-icon>
+            草稿箱
+          </h3>
+        </div>
+      </template>
+
+      <div v-loading="draftsLoading" class="content-area">
+        <div v-if="drafts.length > 0" class="items-grid">
+          <el-card
+            v-for="draft in drafts"
+            :key="draft.id"
+            class="item-card note-card draft-card"
+            shadow="hover"
+            @click="goToEditDraft(draft.id)"
+          >
+            <div class="item-image-wrapper">
+              <img :src="getImageUrl(draft.image)" :alt="draft.name" class="item-image" />
+              <div class="item-overlay">
+                <el-tag type="warning" size="small" class="draft-tag">草稿</el-tag>
+                <el-button
+                  type="danger"
+                  :icon="Delete"
+                  circle
+                  size="small"
+                  @click.stop="handleDeleteDraft(draft.id)"
+                />
+              </div>
+            </div>
+            <div class="item-info">
+              <h4 class="item-name">{{ draft.name || '未命名草稿' }}</h4>
+              <p class="item-description">{{ draft.description || '暂无描述' }}</p>
+              <div class="item-meta">
+                <span class="note-date">{{ formatDate(draft.createdAt) }}</span>
+                <div v-if="draft.tags && draft.tags.length > 0" class="note-tags">
+                  <el-tag
+                    v-for="tag in draft.tags.slice(0, 3)"
+                    :key="tag"
+                    size="small"
+                    style="margin-right: 4px"
+                  >
+                    {{ tag }}
+                  </el-tag>
+                </div>
+              </div>
+            </div>
+          </el-card>
+        </div>
+        <el-empty v-else description="暂无草稿" />
+      </div>
+    </el-card>
   </div>
 </template>
 
@@ -249,7 +313,7 @@ import { useUserStore } from '@/stores/user'
 import { useDishesStore } from '@/stores/dishes'
 import { useNotesStore } from '@/stores/notes'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Star, StarFilled, Clock, Document, Edit, Delete, ArrowLeft, Search } from '@element-plus/icons-vue'
+import { Star, StarFilled, Clock, Document, Edit, Delete, ArrowLeft, Search, EditPen } from '@element-plus/icons-vue'
 import type { Dish } from '@/stores/dishes'
 import type { Note } from '@/stores/notes'
 import { getImageUrl } from '@/utils/image'
@@ -263,9 +327,11 @@ const notesStore = useNotesStore()
 const favorites = ref<Dish[]>([])
 const favoriteNotes = ref<Note[]>([])
 const notes = ref<Note[]>([])
+const drafts = ref<Note[]>([])
 const loading = ref(false)
 const favoriteNotesLoading = ref(false)
 const notesLoading = ref(false)
+const draftsLoading = ref(false)
 const activeTab = ref<string>('favorite-dishes')
 const favoriteDishSearchKeyword = ref('')
 const favoriteNoteSearchKeyword = ref('')
@@ -273,19 +339,23 @@ const favoriteNoteSearchKeyword = ref('')
 onMounted(async () => {
   // 根据路由参数设置初始tab
   const tab = route.query.tab as string
-  if (tab === 'notes' || tab === 'favorite-dishes' || tab === 'favorite-notes') {
+  if (tab === 'notes' || tab === 'favorite-dishes' || tab === 'favorite-notes' || tab === 'drafts') {
     activeTab.value = tab
   }
   
   await loadFavorites()
   await loadFavoriteNotes()
   await loadNotes()
+  await loadDrafts()
 })
 
 // 监听路由变化
 watch(() => route.query.tab, (newTab) => {
-  if (newTab === 'notes' || newTab === 'favorite-dishes' || newTab === 'favorite-notes') {
+  if (newTab === 'notes' || newTab === 'favorite-dishes' || newTab === 'favorite-notes' || newTab === 'drafts') {
     activeTab.value = newTab as string
+    if (newTab === 'drafts') {
+      loadDrafts()
+    }
   }
 })
 
@@ -372,6 +442,43 @@ const loadNotes = async () => {
 
 const goToNoteDetail = (id: number) => {
   router.push(`/note/${id}`)
+}
+
+const loadDrafts = async () => {
+  draftsLoading.value = true
+  try {
+    drafts.value = await notesStore.fetchDrafts()
+  } catch (error) {
+    ElMessage.error('加载草稿列表失败')
+  } finally {
+    draftsLoading.value = false
+  }
+}
+
+const goToEditDraft = (draftId: number) => {
+  router.push(`/note/create?draftId=${draftId}`)
+}
+
+const handleDeleteDraft = async (draftId: number) => {
+  try {
+    await ElMessageBox.confirm('确定要删除这个草稿吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+
+    const result = await notesStore.deleteNote(draftId)
+    if (result.success) {
+      drafts.value = drafts.value.filter(draft => draft.id !== draftId)
+      ElMessage.success('删除成功')
+    } else {
+      ElMessage.error(result.message || '删除失败')
+    }
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      ElMessage.error('操作失败')
+    }
+  }
 }
 
 const handleToggleVisibility = async (noteId: number, isPublic: boolean) => {
@@ -663,6 +770,14 @@ const filteredFavoriteNotes = computed(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
+}
+
+.draft-card {
+  border-left: 3px solid #ff9800;
+}
+
+.draft-tag {
+  margin-bottom: 8px;
 }
 
 .user-info {

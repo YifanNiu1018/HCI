@@ -13,6 +13,7 @@ export interface Note {
   isPublic: boolean
   createdAt: string
   isFavorite?: boolean
+  isDraft?: boolean
   author: {
     id: number
     username: string
@@ -24,6 +25,7 @@ export interface Note {
 export const useNotesStore = defineStore('notes', () => {
   const notes = ref<Note[]>([])
   const publicNotes = ref<Note[]>([])
+  const drafts = ref<Note[]>([])
   const loading = ref(false)
 
   async function createNote(noteData: {
@@ -34,6 +36,7 @@ export const useNotesStore = defineStore('notes', () => {
     steps?: string[]
     tags?: string[]
     isPublic?: boolean
+    isDraft?: boolean
   }) {
     loading.value = true
     try {
@@ -41,6 +44,62 @@ export const useNotesStore = defineStore('notes', () => {
       return { success: true, data: response.data }
     } catch (error: any) {
       return { success: false, message: error.response?.data?.message || '创建笔记失败' }
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function saveDraft(noteData: {
+    name?: string
+    description?: string
+    image?: string
+    ingredients?: string[]
+    steps?: string[]
+    tags?: string[]
+    isPublic?: boolean
+  }) {
+    loading.value = true
+    try {
+      const response = await api.post('/notes/draft', { ...noteData, isDraft: true })
+      return { success: true, data: response.data }
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || '保存草稿失败' }
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function updateDraft(draftId: number, noteData: {
+    name?: string
+    description?: string
+    image?: string
+    ingredients?: string[]
+    steps?: string[]
+    tags?: string[]
+    isPublic?: boolean
+    isDraft?: boolean
+  }) {
+    loading.value = true
+    try {
+      const response = await api.put(`/notes/draft/${draftId}`, noteData)
+      return { success: true, data: response.data }
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || '更新草稿失败' }
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function fetchDrafts() {
+    loading.value = true
+    try {
+      const response = await api.get('/notes/drafts')
+      drafts.value = response.data
+      return response.data
+    } catch (error) {
+      console.error('获取草稿列表失败:', error)
+      drafts.value = []
+      return []
     } finally {
       loading.value = false
     }
@@ -160,6 +219,7 @@ export const useNotesStore = defineStore('notes', () => {
   return {
     notes,
     publicNotes,
+    drafts,
     loading,
     createNote,
     fetchMyNotes,
@@ -167,7 +227,10 @@ export const useNotesStore = defineStore('notes', () => {
     updateNoteVisibility,
     deleteNote,
     toggleFavorite,
-    getNoteById
+    getNoteById,
+    saveDraft,
+    updateDraft,
+    fetchDrafts
   }
 })
 

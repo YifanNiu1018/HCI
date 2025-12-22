@@ -13,9 +13,16 @@ import java.util.List;
 public interface NoteRepository extends JpaRepository<Note, Long> {
     List<Note> findByUser(User user);
     
-    List<Note> findByIsPublicTrue();
+    @Query("SELECT n FROM Note n WHERE n.user = :user AND (n.isDraft = false OR n.isDraft IS NULL)")
+    List<Note> findByUserAndIsDraftFalse(@Param("user") User user);
     
-    @Query("SELECT n FROM Note n WHERE n.isPublic = true AND " +
+    @Query("SELECT n FROM Note n WHERE n.user = :user AND n.isDraft = true")
+    List<Note> findByUserAndIsDraftTrue(@Param("user") User user);
+    
+    @Query("SELECT n FROM Note n WHERE n.isPublic = true AND (n.isDraft = false OR n.isDraft IS NULL)")
+    List<Note> findByIsPublicTrueAndIsDraftFalse();
+    
+    @Query("SELECT n FROM Note n WHERE n.isPublic = true AND (n.isDraft = false OR n.isDraft IS NULL) AND " +
            "(LOWER(n.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(n.description) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "EXISTS (SELECT i FROM n.ingredients i WHERE LOWER(i) LIKE LOWER(CONCAT('%', :keyword, '%'))) OR " +

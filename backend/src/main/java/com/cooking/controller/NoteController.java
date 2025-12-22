@@ -61,6 +61,38 @@ public class NoteController {
         }
     }
 
+    @GetMapping("/drafts")
+    public ResponseEntity<List<NoteResponse>> getDrafts() {
+        try {
+            List<NoteResponse> drafts = noteService.getDrafts();
+            return ResponseEntity.ok(drafts);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/draft")
+    public ResponseEntity<NoteResponse> saveDraft(@RequestBody NoteRequest request) {
+        try {
+            NoteResponse response = noteService.saveDraft(request);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PutMapping("/draft/{id}")
+    public ResponseEntity<NoteResponse> updateDraft(
+            @PathVariable Long id,
+            @RequestBody NoteRequest request) {
+        try {
+            NoteResponse response = noteService.updateDraft(id, request);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     @PutMapping("/{id}/visibility")
     public ResponseEntity<NoteResponse> updateNoteVisibility(
             @PathVariable Long id,

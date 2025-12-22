@@ -46,6 +46,9 @@ public class Note {
     @Column(nullable = false)
     private Boolean isPublic = true;
 
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean isDraft = false;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

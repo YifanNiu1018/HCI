@@ -35,6 +35,7 @@ public class NoteService {
         note.setSteps(request.getSteps() != null ? request.getSteps() : List.of());
         note.setTags(request.getTags() != null ? request.getTags() : List.of());
         note.setIsPublic(request.getIsPublic() != null ? request.getIsPublic() : true);
+        note.setIsDraft(request.getIsDraft() != null ? request.getIsDraft() : false);
         note.setUser(user);
 
         note = noteRepository.save(note);
@@ -46,14 +47,97 @@ public class NoteService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("用户不存在"));
 
-        return noteRepository.findByUser(user).stream()
+        return noteRepository.findByUserAndIsDraftFalse(user).stream()
                 .map(NoteResponse::from)
                 .collect(Collectors.toList());
     }
 
+    public List<NoteResponse> getDrafts() {
+        String username = getCurrentUsername();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("用户不存在"));
+
+        return noteRepository.findByUserAndIsDraftTrue(user).stream()
+                .map(NoteResponse::from)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public NoteResponse saveDraft(NoteRequest request) {
+        String username = getCurrentUsername();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("用户不存在"));
+
+        Note note = new Note();
+        note.setName(request.getName() != null && !request.getName().trim().isEmpty() 
+                ? request.getName() : "未命名草稿");
+        note.setDescription(request.getDescription());
+        note.setImage(request.getImage() != null ? request.getImage() : "/images/default.jpg");
+        note.setIngredients(request.getIngredients() != null ? request.getIngredients() : List.of());
+        note.setSteps(request.getSteps() != null ? request.getSteps() : List.of());
+        note.setTags(request.getTags() != null ? request.getTags() : List.of());
+        note.setIsPublic(request.getIsPublic() != null ? request.getIsPublic() : true);
+        note.setIsDraft(true);
+        note.setUser(user);
+
+        note = noteRepository.save(note);
+        return NoteResponse.from(note);
+    }
+
+    @Transactional
+    public NoteResponse updateDraft(Long draftId, NoteRequest request) {
+        String username = getCurrentUsername();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("用户不存在"));
+
+        Note note = noteRepository.findById(draftId)
+                .orElseThrow(() -> new RuntimeException("草稿不存在"));
+
+        if (!note.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("无权修改此草稿");
+        }
+
+        if (!note.getIsDraft()) {
+            throw new RuntimeException("该笔记不是草稿");
+        }
+
+        // 更新name，如果为空字符串则保持原名称，如果为null则不更新
+        if (request.getName() != null) {
+            String newName = request.getName().trim();
+            if (!newName.isEmpty()) {
+                note.setName(newName);
+            }
+            // 如果为空字符串，保持原名称不变（不更新）
+        }
+        if (request.getDescription() != null) {
+            note.setDescription(request.getDescription());
+        }
+        if (request.getImage() != null) {
+            note.setImage(request.getImage());
+        }
+        if (request.getIngredients() != null) {
+            note.setIngredients(request.getIngredients());
+        }
+        if (request.getSteps() != null) {
+            note.setSteps(request.getSteps());
+        }
+        if (request.getTags() != null) {
+            note.setTags(request.getTags());
+        }
+        if (request.getIsPublic() != null) {
+            note.setIsPublic(request.getIsPublic());
+        }
+        if (request.getIsDraft() != null) {
+            note.setIsDraft(request.getIsDraft());
+        }
+
+        note = noteRepository.save(note);
+        return NoteResponse.from(note);
+    }
+
     public List<NoteResponse> getPublicNotes() {
         String username = getCurrentUsername();
-        return noteRepository.findByIsPublicTrue().stream()
+        return noteRepository.findByIsPublicTrueAndIsDraftFalse().stream()
                 .map(note -> {
                     boolean isFavorite = username != null && isFavorite(note.getId(), username);
                     return NoteResponse.from(note, isFavorite);
@@ -78,9 +162,22 @@ public class NoteService {
         Note note = noteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("笔记不存在"));
 
-        // 检查权限：公开笔记或自己的笔记
+        // 检查权限：公开笔记或自己的笔记（草稿只能自己访问）
         String username = getCurrentUsername();
-        if (!note.getIsPublic()) {
+        boolean isDraft = note.getIsDraft() != null && note.getIsDraft();
+        
+        if (isDraft) {
+            // 草稿只能自己访问
+            if (username == null) {
+                throw new RuntimeException("无权访问此笔记");
+            }
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("用户不存在"));
+            if (!note.getUser().getId().equals(user.getId())) {
+                throw new RuntimeException("无权访问此笔记");
+            }
+        } else if (!note.getIsPublic()) {
+            // 私密笔记只能自己访问
             if (username == null) {
                 throw new RuntimeException("无权访问此笔记");
             }
