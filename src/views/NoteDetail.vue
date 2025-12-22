@@ -21,13 +21,34 @@
             </div>
             <div class="detail-info">
               <div class="note-author">
-                <el-avatar :size="40" :src="note.author.avatar">
+                <el-avatar 
+                  :size="40" 
+                  :src="note.author.avatar"
+                  @click.stop="goToUserProfile(note.author.id)"
+                  style="cursor: pointer;"
+                >
                   {{ note.author.username?.charAt(0) }}
                 </el-avatar>
                 <div class="author-info">
-                  <span class="author-name">{{ note.author.username }}</span>
+                  <span 
+                    class="author-name"
+                    @click.stop="goToUserProfile(note.author.id)"
+                    style="cursor: pointer; color: #409eff;"
+                  >
+                    {{ note.author.username }}
+                  </span>
                   <span class="note-date">{{ formatDate(note.createdAt) }}</span>
                 </div>
+                <el-button
+                  v-if="userStore.isLoggedIn && userStore.user?.id !== note.author.id"
+                  :type="isFollowing ? 'info' : 'primary'"
+                  size="small"
+                  @click="handleToggleFollow"
+                  :loading="followLoading"
+                  style="margin-left: auto"
+                >
+                  {{ isFollowing ? '已关注' : '关注' }}
+                </el-button>
                 <el-tag :type="note.isPublic ? 'success' : 'info'" size="small" style="margin-left: auto">
                   {{ note.isPublic ? '公开' : '私密' }}
                 </el-tag>
@@ -219,6 +240,8 @@ const favoriteLoading = ref(false)
 const commentLoading = ref(false)
 const newComment = ref('')
 const showCommentForm = ref(false)
+const isFollowing = ref(false)
+const followLoading = ref(false)
 
 onMounted(async () => {
   const noteId = parseInt(route.params.id as string)
@@ -226,6 +249,9 @@ onMounted(async () => {
     await fetchNote(noteId)
     if (note.value && note.value.isPublic) {
       await commentsStore.fetchNoteComments(noteId)
+    }
+    if (note.value && userStore.isLoggedIn && userStore.user?.id !== note.value.author.id) {
+      await checkFollowStatus(note.value.author.id)
     }
   }
 })
@@ -244,6 +270,42 @@ const fetchNote = async (id: number) => {
     }
   } finally {
     loading.value = false
+  }
+}
+
+const checkFollowStatus = async (userId: number) => {
+  try {
+    const response = await api.get(`/follow/status/${userId}`)
+    isFollowing.value = response.data
+  } catch (error) {
+    isFollowing.value = false
+  }
+}
+
+const handleToggleFollow = async () => {
+  if (!userStore.isLoggedIn) {
+    ElMessage.warning('请先登录')
+    router.push({ name: 'Login', query: { redirect: route.fullPath } })
+    return
+  }
+
+  if (!note.value) return
+
+  followLoading.value = true
+  try {
+    if (isFollowing.value) {
+      await api.delete(`/follow/${note.value.author.id}`)
+      isFollowing.value = false
+      ElMessage.success('取消关注成功')
+    } else {
+      await api.post(`/follow/${note.value.author.id}`)
+      isFollowing.value = true
+      ElMessage.success('关注成功')
+    }
+  } catch (error: any) {
+    ElMessage.error(error.response?.data?.message || '操作失败')
+  } finally {
+    followLoading.value = false
   }
 }
 
@@ -371,6 +433,10 @@ const formatDate = (dateString: string) => {
 
 const handleClose = () => {
   router.back()
+}
+
+const goToUserProfile = (userId: number) => {
+  router.push(`/user/${userId}`)
 }
 
 const toggleCommentForm = () => {

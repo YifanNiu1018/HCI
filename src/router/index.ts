@@ -74,6 +74,24 @@ const routes: RouteRecordRaw[] = [
     name: 'Notes',
     component: () => import('@/views/Notes.vue'),
     meta: { requiresAuth: false }
+  },
+  {
+    path: '/user/:userId',
+    name: 'UserProfile',
+    component: () => import('@/views/UserProfile.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/messages',
+    name: 'Messages',
+    component: () => import('@/views/Messages.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/settings',
+    name: 'Settings',
+    component: () => import('@/views/Settings.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 

@@ -32,10 +32,32 @@
           <p class="note-description">{{ note.description }}</p>
           <div class="note-footer">
             <div class="note-author">
-              <el-avatar :size="24" :src="note.author.avatar" class="author-avatar">
+              <el-avatar 
+                :size="24" 
+                :src="getImageUrl(note.author.avatar || '')" 
+                class="author-avatar"
+                @click.stop="goToUserProfile(note.author.id)"
+                style="cursor: pointer;"
+              >
                 {{ note.author.username?.charAt(0) }}
               </el-avatar>
-              <span class="author-name">{{ note.author.username }}</span>
+              <span 
+                class="author-name" 
+                @click.stop="goToUserProfile(note.author.id)"
+                style="cursor: pointer; color: #409eff;"
+              >
+                {{ note.author.username }}
+              </span>
+              <el-button
+                v-if="userStore.isLoggedIn && userStore.user?.id !== note.author.id"
+                :type="noteAuthorFollowStatus[note.author.id] ? 'info' : 'primary'"
+                size="small"
+                @click.stop="handleToggleFollow(note.author.id)"
+                :loading="followLoading[note.author.id]"
+                style="margin-left: 8px"
+              >
+                {{ noteAuthorFollowStatus[note.author.id] ? '已关注' : '关注' }}
+              </el-button>
             </div>
             <div v-if="note.tags && note.tags.length > 0" class="note-tags">
               <el-tag
@@ -82,6 +104,8 @@ const router = useRouter()
 const notesStore = useNotesStore()
 const userStore = useUserStore()
 const noteFavoriteLoading = ref<Record<number, boolean>>({})
+const followLoading = ref<Record<number, boolean>>({})
+const noteAuthorFollowStatus = ref<Record<number, boolean>>({})
 const currentPage = ref(1)
 const pageSize = ref(12)
 const total = ref(0)
@@ -89,6 +113,7 @@ const totalPages = ref(0)
 
 onMounted(async () => {
   await loadNotes()
+  await checkFollowStatuses()
 })
 
 watch(() => route.query.page, (newPage) => {
@@ -116,6 +141,7 @@ const loadNotes = async () => {
       total.value = response.data.length
       totalPages.value = Math.ceil(total.value / pageSize.value)
     }
+    await checkFollowStatuses()
   } catch (error) {
     console.error('加载笔记失败:', error)
   }
@@ -130,6 +156,50 @@ const handlePageChange = (page: number) => {
 
 const goToNoteDetail = (noteId: number) => {
   router.push(`/note/${noteId}`)
+}
+
+const goToUserProfile = (userId: number) => {
+  router.push(`/user/${userId}`)
+}
+
+const checkFollowStatuses = async () => {
+  if (!userStore.isLoggedIn) return
+  
+  const authorIds = [...new Set(notesStore.publicNotes.map(note => note.author.id))]
+  for (const authorId of authorIds) {
+    if (userStore.user?.id === authorId) continue
+    try {
+      const response = await api.get(`/follow/status/${authorId}`)
+      noteAuthorFollowStatus.value[authorId] = response.data
+    } catch (error) {
+      noteAuthorFollowStatus.value[authorId] = false
+    }
+  }
+}
+
+const handleToggleFollow = async (authorId: number) => {
+  if (!userStore.isLoggedIn) {
+    ElMessage.warning('请先登录')
+    router.push({ name: 'Login', query: { redirect: route.fullPath } })
+    return
+  }
+
+  followLoading.value[authorId] = true
+  try {
+    if (noteAuthorFollowStatus.value[authorId]) {
+      await api.delete(`/follow/${authorId}`)
+      noteAuthorFollowStatus.value[authorId] = false
+      ElMessage.success('取消关注成功')
+    } else {
+      await api.post(`/follow/${authorId}`)
+      noteAuthorFollowStatus.value[authorId] = true
+      ElMessage.success('关注成功')
+    }
+  } catch (error: any) {
+    ElMessage.error(error.response?.data?.message || '操作失败')
+  } finally {
+    followLoading.value[authorId] = false
+  }
 }
 
 const handleToggleFavorite = async (noteId: number, isFavorite: boolean) => {
@@ -311,6 +381,7 @@ const handleToggleFavorite = async (noteId: number, isFavorite: boolean) => {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .author-avatar {

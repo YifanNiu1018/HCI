@@ -22,6 +22,7 @@ public class DishService {
 
     private final DishRepository dishRepository;
     private final UserRepository userRepository;
+    private final com.cooking.service.HistoryService historyService;
 
     public List<DishResponse> getAllDishes(String keyword) {
         List<Dish> dishes;
@@ -61,6 +62,12 @@ public class DishService {
 
         String username = getCurrentUsername();
         boolean isFavorite = username != null && isFavorite(id, username);
+        
+        // 记录浏览历史
+        if (username != null) {
+            historyService.recordDishView(id);
+        }
+        
         return DishResponse.from(dish, isFavorite);
     }
 

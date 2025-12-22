@@ -1,10 +1,10 @@
 # 美食厨房 - 做菜分享平台
 
-一个基于 Vue 3 + Spring Boot 的美食分享平台，支持用户发布做菜笔记、收藏菜品、搜索食材、智能推荐等功能。
+一个基于 Vue 3 + Spring Boot 的美食分享平台，支持用户发布做菜笔记、收藏菜品、关注其他用户、查看浏览历史等功能。
 
 ## 项目简介
 
-这是一个人机交互（HCI）课程项目，旨在提供一个功能丰富、交互友好的美食分享平台。用户可以浏览菜品、发布做菜笔记、收藏喜欢的菜品、搜索食材，并通过智能推荐功能获得做菜灵感。
+这是一个人机交互（HCI）课程项目，旨在提供一个功能丰富、交互友好的美食分享平台。用户可以浏览菜品、发布做菜笔记、关注其他用户、查看关注动态，并通过智能推荐功能获得做菜灵感。
 
 ## 技术栈
 
@@ -36,27 +36,47 @@
 
 ### 2. 菜品浏览与搜索
 - ✅ 首页展示系统菜品和用户公开笔记
+- ✅ 菜品分类浏览
 - ✅ 菜品详情页（食材、制作步骤、图片）
 - ✅ 关键词搜索（支持按菜品名称和食材搜索）
-- ✅ 响应式布局，适配不同屏幕
+- ✅ 响应式布局，适配移动端和桌面端
 
 ### 3. 菜品收藏功能
 - ✅ 收藏/取消收藏菜品
-- ✅ 个人中心查看收藏列表
+- ✅ 收藏/取消收藏笔记
+- ✅ 个人中心查看收藏列表（菜谱和笔记）
 - ✅ 收藏状态实时更新
+- ✅ 收藏列表搜索功能
 
 ### 4. 用户做菜笔记
 - ✅ 发布做菜笔记（菜名、描述、图片、用料、做法、标签）
 - ✅ 图片上传功能
 - ✅ 快速选择常用食材和标签
 - ✅ 公开/私密设置
-- ✅ 公开笔记在首页展示
+- ✅ 公开笔记在首页和笔记页展示
 - ✅ 私密笔记仅自己可见
 - ✅ 笔记可见性切换（公开↔私密）
 - ✅ 笔记删除功能
 - ✅ 笔记详情页
+- ✅ **草稿箱功能**：保存未完成的笔记，支持继续编辑和发布
 
-### 5. 发现功能
+### 5. 关注/粉丝系统
+- ✅ 关注其他用户
+- ✅ 取消关注
+- ✅ 查看关注列表和粉丝列表
+- ✅ 查看关注用户的动态（公开笔记）
+- ✅ 在笔记列表、详情页等位置直接关注作者
+- ✅ 用户个人页面展示（查看其他用户的公开笔记）
+- ✅ 关注状态实时更新
+
+### 6. 浏览历史记录
+- ✅ 自动记录浏览的菜品和笔记
+- ✅ 个人中心查看历史记录
+- ✅ 区分菜品和笔记类型
+- ✅ 清空历史记录功能
+- ✅ 按时间倒序显示
+
+### 7. 发现功能
 - ✅ **根据菜品买菜**：输入菜品名称，生成分类购物清单
   - 自动分类为主要食材和基础调料
   - 支持勾选已有食材
@@ -66,19 +86,34 @@
   - 显示还需准备的食材（分类显示）
   - 按匹配度排序推荐
 
-### 6. 评论系统
+### 8. 评论系统
 - ✅ 菜品评论功能（公开可见）
+- ✅ 笔记评论功能
 - ✅ 回复评论（二级评论）
 - ✅ 评论删除（仅自己的评论）
 - ✅ 评论时间友好显示
 - ✅ 评论列表展示
 
-### 7. 个人中心
-- ✅ Tab 切换查看收藏和笔记
-- ✅ 用户信息展示
-- ✅ 收藏管理
-- ✅ 笔记管理（切换可见性、删除）
-- ✅ 快速导航（下拉菜单）
+### 9. 个人中心
+- ✅ 用户信息展示（头像、用户名、邮箱）
+- ✅ 统计数据展示（关注数、粉丝数、收藏数、笔记数）
+- ✅ Tab 切换查看：
+  - 收藏的菜谱（支持搜索）
+  - 收藏的笔记（支持搜索）
+  - 我的笔记
+  - 草稿箱
+  - 历史记录
+  - 关注用户动态
+- ✅ 笔记管理（切换可见性、删除、编辑草稿）
+- ✅ 快速导航（用户下拉菜单）
+
+### 10. 用户个人页面
+- ✅ 查看其他用户的个人主页
+- ✅ 显示用户基本信息（头像、用户名、邮箱）
+- ✅ 显示用户统计数据（关注数、粉丝数、笔记数）
+- ✅ 查看该用户发布的公开笔记
+- ✅ 在用户页面直接关注/取消关注
+- ✅ 收藏该用户发布的笔记
 
 ## 项目结构
 
@@ -88,11 +123,26 @@ HCI/
 │   ├── src/main/java/com/cooking/
 │   │   ├── config/            # 配置类（安全、CORS、数据初始化）
 │   │   ├── controller/        # REST 控制器
+│   │   │   ├── AuthController.java
+│   │   │   ├── DishController.java
+│   │   │   ├── NoteController.java
+│   │   │   ├── CommentController.java
+│   │   │   ├── UserController.java
+│   │   │   ├── FollowController.java
+│   │   │   ├── HistoryController.java
+│   │   │   └── ...
 │   │   ├── dto/               # 数据传输对象
-│   │   ├── entity/             # 实体类（User, Dish, Note, Comment）
+│   │   ├── entity/            # 实体类（User, Dish, Note, Comment, History）
 │   │   ├── repository/        # 数据访问层
 │   │   ├── security/          # 安全配置（JWT）
-│   │   └── service/            # 业务逻辑层
+│   │   ├── service/           # 业务逻辑层
+│   │   │   ├── AuthService.java
+│   │   │   ├── DishService.java
+│   │   │   ├── NoteService.java
+│   │   │   ├── CommentService.java
+│   │   │   ├── FollowService.java
+│   │   │   └── HistoryService.java
+│   │   └── util/              # 工具类
 │   ├── src/main/resources/
 │   │   ├── static/images/     # 系统内置菜品图片
 │   │   └── application.yml    # 应用配置
@@ -106,17 +156,20 @@ HCI/
     ├── stores/                 # Pinia 状态管理
     │   ├── user.ts            # 用户状态
     │   ├── dishes.ts          # 菜品状态
-    │   ├── notes.ts            # 笔记状态
-    │   ├── comments.ts         # 评论状态
-    │   └── search.ts           # 搜索状态
+    │   ├── notes.ts           # 笔记状态
+    │   ├── comments.ts        # 评论状态
+    │   └── search.ts          # 搜索状态
     ├── views/                  # 页面组件
     │   ├── Home.vue           # 首页
     │   ├── Login.vue          # 登录页
     │   ├── Register.vue       # 注册页
-    │   ├── DishDetail.vue     # 菜品详情页
+    │   ├── DishDetail.vue    # 菜品详情页
     │   ├── Profile.vue        # 个人中心
-    │   ├── CreateNote.vue     # 发布笔记页
+    │   ├── UserProfile.vue    # 用户个人页面
+    │   ├── CreateNote.vue    # 发布笔记页
     │   ├── NoteDetail.vue     # 笔记详情页
+    │   ├── Notes.vue          # 笔记列表页
+    │   ├── Dishes.vue         # 菜品列表页
     │   └── Discover.vue       # 发现页
     ├── router/                 # 路由配置
     └── utils/                  # 工具函数
@@ -166,10 +219,10 @@ mvn spring-boot:run
 - `POST /api/auth/login` - 用户登录
 
 ### 菜品相关
-- `GET /api/dishes` - 获取菜品列表（支持关键词搜索）
+- `GET /api/dishes` - 获取菜品列表（支持关键词搜索、分类筛选、分页）
 - `GET /api/dishes/{id}` - 获取菜品详情
 - `POST /api/dishes/{id}/favorite` - 收藏/取消收藏菜品
-- `GET /api/dishes/favorites` - 获取收藏列表
+- `GET /api/user/favorites` - 获取收藏列表
 
 ### 笔记相关
 - `POST /api/notes` - 创建笔记（需登录）
@@ -178,11 +231,38 @@ mvn spring-boot:run
 - `GET /api/notes/{id}` - 获取笔记详情
 - `PUT /api/notes/{id}/visibility` - 更新笔记可见性（需登录）
 - `DELETE /api/notes/{id}` - 删除笔记（需登录）
+- `POST /api/notes/{id}/favorite` - 收藏/取消收藏笔记（需登录）
+- `GET /api/notes/following` - 获取关注用户的动态（需登录）
+
+### 草稿相关
+- `GET /api/notes/drafts` - 获取草稿列表（需登录）
+- `POST /api/notes/draft` - 保存草稿（需登录）
+- `PUT /api/notes/draft/{id}` - 更新草稿（需登录）
 
 ### 评论相关
-- `POST /api/dishes/{dishId}/comments` - 发表评论（需登录）
-- `GET /api/dishes/{dishId}/comments` - 获取评论列表
+- `POST /api/dishes/{dishId}/comments` - 发表菜品评论（需登录）
+- `GET /api/dishes/{dishId}/comments` - 获取菜品评论列表
 - `DELETE /api/dishes/{dishId}/comments/{commentId}` - 删除评论（需登录）
+- `POST /api/notes/{noteId}/comments` - 发表笔记评论（需登录）
+- `GET /api/notes/{noteId}/comments` - 获取笔记评论列表
+- `DELETE /api/notes/{noteId}/comments/{commentId}` - 删除评论（需登录）
+
+### 关注相关
+- `POST /api/follow/{userId}` - 关注用户（需登录）
+- `DELETE /api/follow/{userId}` - 取消关注（需登录）
+- `GET /api/follow/following` - 获取我的关注列表（需登录）
+- `GET /api/follow/followers` - 获取我的粉丝列表（需登录）
+- `GET /api/follow/status/{userId}` - 检查关注状态（需登录）
+
+### 用户相关
+- `GET /api/user/info` - 获取当前用户信息（需登录）
+- `GET /api/user/{userId}` - 获取指定用户信息
+- `GET /api/user/{userId}/notes` - 获取指定用户的公开笔记
+- `GET /api/user/favorite-notes` - 获取收藏的笔记（需登录）
+
+### 历史记录相关
+- `GET /api/history` - 获取浏览历史（需登录）
+- `DELETE /api/history` - 清空浏览历史（需登录）
 
 ### 搜索相关
 - `GET /api/search?keyword=xxx` - 搜索菜品和公开笔记
@@ -216,6 +296,30 @@ mvn spring-boot:run
 - **根据菜品买菜**：智能分析菜品所需食材，分类展示
 - **根据食材找菜品**：根据已有食材推荐可做的菜品，显示缺少的食材
 
+### 6. 关注系统
+- 用户可以关注其他用户
+- 查看关注用户的公开笔记动态
+- 在多个位置（笔记列表、详情页等）快速关注作者
+- 查看关注列表和粉丝列表
+- 访问其他用户的个人页面
+
+### 7. 草稿箱
+- 保存未完成的笔记为草稿
+- 草稿可以继续编辑
+- 草稿可以发布为正式笔记
+- 草稿仅自己可见
+
+### 8. 浏览历史
+- 自动记录浏览的菜品和笔记
+- 5分钟内重复浏览同一内容会更新浏览时间
+- 按时间倒序显示历史记录
+- 支持清空历史记录
+
+### 9. 响应式设计
+- 适配桌面端、平板和移动端
+- 移动端优化的导航和布局
+- 响应式卡片和网格布局
+
 ## 开发说明
 
 ### 添加新菜品
@@ -224,7 +328,17 @@ mvn spring-boot:run
 ### 修改配置
 - 前端 API 地址：`src/api/index.ts`
 - 后端配置：`backend/src/main/resources/application.yml`
-- CORS 配置：`backend/src/main/java/com/cooking/config/WebConfig.java`
+- CORS 配置：`backend/src/main/java/com/cooking/config/SecurityConfig.java`
+
+### 数据库表结构
+- `users` - 用户表
+- `dishes` - 菜品表
+- `notes` - 笔记表
+- `comments` - 评论表
+- `histories` - 历史记录表
+- `user_favorites` - 用户收藏菜品关联表
+- `user_favorite_notes` - 用户收藏笔记关联表
+- `user_follows` - 用户关注关联表
 
 ## 注意事项
 
@@ -232,6 +346,24 @@ mvn spring-boot:run
 2. 用户上传的图片保存在 `backend/uploads/` 目录
 3. 数据库文件会自动创建，无需手动配置
 4. 生产环境建议使用 MySQL 等专业数据库
+5. 关注关系使用双向 `@ManyToMany` 关系，已优化避免循环引用问题
+
+## 功能演示
+
+### 核心流程
+1. **注册/登录** → 创建账户或登录
+2. **浏览内容** → 查看菜品和笔记，自动记录浏览历史
+3. **发布笔记** → 创建做菜笔记，支持保存草稿
+4. **关注用户** → 关注感兴趣的用户，查看他们的动态
+5. **收藏内容** → 收藏喜欢的菜品和笔记
+6. **查看个人中心** → 管理自己的内容、查看统计数据
+
+### 特色功能
+- 📝 **草稿箱**：随时保存，随时继续
+- 👥 **关注系统**：发现更多美食达人
+- 📊 **浏览历史**：快速找回看过的内容
+- 🔍 **智能搜索**：按名称、食材搜索
+- 🛒 **发现功能**：根据食材找菜品，根据菜品买菜
 
 ## 许可证
 

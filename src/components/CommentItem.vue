@@ -2,7 +2,7 @@
   <div class="comment-item">
     <div class="comment-header">
       <div class="comment-author">
-        <el-avatar :size="32" :src="comment.author.avatar">
+        <el-avatar :size="32" :src="getImageUrl(comment.author.avatar || '')">
           {{ comment.author.username?.charAt(0) }}
         </el-avatar>
         <div class="author-info">
@@ -61,7 +61,7 @@
         class="reply-item"
       >
         <div class="reply-header">
-          <el-avatar :size="24" :src="reply.author.avatar">
+          <el-avatar :size="24" :src="getImageUrl(reply.author.avatar || '')">
             {{ reply.author.username?.charAt(0) }}
           </el-avatar>
           <div class="reply-author-info">
@@ -93,6 +93,7 @@ import { useUserStore } from '@/stores/user'
 import { useCommentsStore } from '@/stores/comments'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ChatLineRound } from '@element-plus/icons-vue'
+import { getImageUrl } from '@/utils/image'
 import type { Comment } from '@/stores/comments'
 
 const props = defineProps<{

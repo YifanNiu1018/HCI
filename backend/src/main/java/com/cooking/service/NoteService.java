@@ -20,6 +20,7 @@ public class NoteService {
 
     private final NoteRepository noteRepository;
     private final UserRepository userRepository;
+    private final com.cooking.service.HistoryService historyService;
 
     @Transactional
     public NoteResponse createNote(NoteRequest request) {
@@ -49,6 +50,20 @@ public class NoteService {
 
         return noteRepository.findByUserAndIsDraftFalse(user).stream()
                 .map(NoteResponse::from)
+                .collect(Collectors.toList());
+    }
+
+    public List<NoteResponse> getUserPublicNotes(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("用户不存在"));
+
+        String username = getCurrentUsername();
+        return noteRepository.findByUserAndIsDraftFalse(user).stream()
+                .filter(Note::getIsPublic)
+                .map(note -> {
+                    boolean isFavorite = username != null && isFavorite(note.getId(), username);
+                    return NoteResponse.from(note, isFavorite);
+                })
                 .collect(Collectors.toList());
     }
 
@@ -189,6 +204,12 @@ public class NoteService {
         }
 
         boolean isFavorite = username != null && isFavorite(note.getId(), username);
+        
+        // 记录浏览历史（只记录非草稿的笔记）
+        if (username != null && !isDraft) {
+            historyService.recordNoteView(note.getId());
+        }
+        
         return NoteResponse.from(note, isFavorite);
     }
 
@@ -268,6 +289,30 @@ public class NoteService {
 
         return user.getFavoriteNotes().stream()
                 .map(note -> NoteResponse.from(note, true))
+                .collect(Collectors.toList());
+    }
+
+    public List<NoteResponse> getFollowingNotes() {
+        String username = getCurrentUsername();
+        if (username == null) {
+            throw new RuntimeException("请先登录");
+        }
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("用户不存在"));
+
+        // 获取所有关注用户的公开笔记
+        List<Note> followingNotes = user.getFollowing().stream()
+                .flatMap(followingUser -> noteRepository.findByUserAndIsDraftFalse(followingUser).stream())
+                .filter(Note::getIsPublic)
+                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .collect(Collectors.toList());
+
+        return followingNotes.stream()
+                .map(note -> {
+                    boolean isFavorite = isFavorite(note.getId(), username);
+                    return NoteResponse.from(note, isFavorite);
+                })
                 .collect(Collectors.toList());
     }
 

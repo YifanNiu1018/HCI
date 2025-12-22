@@ -38,6 +38,8 @@ public class SecurityConfig {
                 .requestMatchers("/notes/*").permitAll()
                 .requestMatchers(HttpMethod.GET, "/dishes/*/comments").permitAll()  // GET comments
                 .requestMatchers(HttpMethod.GET, "/notes/*/comments").permitAll()  // GET comments
+                .requestMatchers(HttpMethod.GET, "/user/*").permitAll()  // GET user info and public notes
+                .requestMatchers("/messages/**").authenticated()  // Messages require authentication
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

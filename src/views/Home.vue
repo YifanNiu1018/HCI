@@ -82,7 +82,25 @@
             <h3 class="dish-name">{{ note.name }}</h3>
             <p class="dish-description">{{ note.description }}</p>
             <div class="dish-meta">
-              <span class="dish-category">by {{ note.author.username }}</span>
+              <div class="note-author-info">
+                <span 
+                  class="dish-category" 
+                  @click.stop="goToUserProfile(note.author.id)"
+                  style="cursor: pointer; color: #409eff;"
+                >
+                  by {{ note.author.username }}
+                </span>
+                <el-button
+                  v-if="userStore.isLoggedIn && userStore.user?.id !== note.author.id"
+                  :type="noteAuthorFollowStatus[note.author.id] ? 'info' : 'primary'"
+                  size="small"
+                  @click.stop="handleToggleFollow(note.author.id)"
+                  :loading="followLoading[note.author.id]"
+                  style="margin-left: 8px"
+                >
+                  {{ noteAuthorFollowStatus[note.author.id] ? '已关注' : '关注' }}
+                </el-button>
+              </div>
               <div v-if="note.tags && note.tags.length > 0" class="note-tags">
                 <el-tag
                   v-for="tag in note.tags.slice(0, 2)"
@@ -202,7 +220,19 @@
               <h3 class="dish-name">{{ note.name }}</h3>
               <p class="dish-description">{{ note.description }}</p>
               <div class="dish-meta">
-                <span class="dish-category">by {{ note.author.username }}</span>
+                <div class="note-author-info">
+                  <span class="dish-category">by {{ note.author.username }}</span>
+                  <el-button
+                    v-if="userStore.isLoggedIn && userStore.user?.id !== note.author.id"
+                    :type="noteAuthorFollowStatus[note.author.id] ? 'info' : 'primary'"
+                    size="small"
+                    @click.stop="handleToggleFollow(note.author.id)"
+                    :loading="followLoading[note.author.id]"
+                    style="margin-left: 8px"
+                  >
+                    {{ noteAuthorFollowStatus[note.author.id] ? '已关注' : '关注' }}
+                  </el-button>
+                </div>
                 <div v-if="note.tags && note.tags.length > 0" class="note-tags">
                   <el-tag
                     v-for="tag in note.tags.slice(0, 2)"
@@ -231,6 +261,7 @@ import { useUserStore } from '@/stores/user'
 import { ElMessage } from 'element-plus'
 import { Clock, Star, StarFilled, User, TrendCharts, Refresh } from '@element-plus/icons-vue'
 import { getImageUrl } from '@/utils/image'
+import api from '@/api'
 
 const route = useRoute()
 const router = useRouter()
@@ -240,6 +271,8 @@ const userStore = useUserStore()
 const searchKeyword = ref<string>((route.query.keyword as string) || '')
 const favoriteLoading = reactive<Record<number, boolean>>({})
 const noteFavoriteLoading = reactive<Record<number, boolean>>({})
+const followLoading = reactive<Record<number, boolean>>({})
+const noteAuthorFollowStatus = reactive<Record<number, boolean>>({})
 const allDishes = ref<any[]>([])
 const allNotes = ref<any[]>([])
 const displayedDishes = ref<any[]>([])
@@ -303,6 +336,7 @@ onMounted(async () => {
     selectRandomDishes()
     selectRandomNotes()
   }
+  await checkFollowStatuses()
 })
 
 watch(() => route.query.keyword, async (newKeyword) => {
@@ -339,6 +373,10 @@ const goToNoteDetail = (id: number) => {
   router.push(`/note/${id}`)
 }
 
+const goToUserProfile = (userId: number) => {
+  router.push(`/user/${userId}`)
+}
+
 const getDifficultyType = (difficulty: string) => {
   const map: Record<string, string> = {
     '简单': 'success',
@@ -368,6 +406,53 @@ const handleToggleFavorite = async (dishId: number, currentFavoriteStatus: boole
     ElMessage.error('操作失败')
   } finally {
     favoriteLoading[dishId] = false
+  }
+}
+
+const checkFollowStatuses = async () => {
+  if (!userStore.isLoggedIn) return
+  
+  const allNoteAuthors = [
+    ...new Set([
+      ...notesStore.publicNotes.map(note => note.author.id),
+      ...allNotes.value.map(note => note.author.id),
+      ...displayedNotes.value.map(note => note.author.id)
+    ])
+  ]
+  
+  for (const authorId of allNoteAuthors) {
+    if (userStore.user?.id === authorId) continue
+    try {
+      const response = await api.get(`/follow/status/${authorId}`)
+      noteAuthorFollowStatus[authorId] = response.data
+    } catch (error) {
+      noteAuthorFollowStatus[authorId] = false
+    }
+  }
+}
+
+const handleToggleFollow = async (authorId: number) => {
+  if (!userStore.isLoggedIn) {
+    ElMessage.warning('请先登录')
+    router.push({ name: 'Login', query: { redirect: route.fullPath } })
+    return
+  }
+
+  followLoading[authorId] = true
+  try {
+    if (noteAuthorFollowStatus[authorId]) {
+      await api.delete(`/follow/${authorId}`)
+      noteAuthorFollowStatus[authorId] = false
+      ElMessage.success('取消关注成功')
+    } else {
+      await api.post(`/follow/${authorId}`)
+      noteAuthorFollowStatus[authorId] = true
+      ElMessage.success('关注成功')
+    }
+  } catch (error: any) {
+    ElMessage.error(error.response?.data?.message || '操作失败')
+  } finally {
+    followLoading[authorId] = false
   }
 }
 
@@ -705,6 +790,13 @@ const handleToggleNoteFavorite = async (noteId: number, currentFavoriteStatus: b
 .dish-meta {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.note-author-info {
+  display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;

@@ -124,5 +124,15 @@ public class NoteController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+    @GetMapping("/following")
+    public ResponseEntity<List<NoteResponse>> getFollowingNotes() {
+        try {
+            List<NoteResponse> notes = noteService.getFollowingNotes();
+            return ResponseEntity.ok(notes);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }
 

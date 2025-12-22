@@ -16,12 +16,29 @@
       </template>
 
       <div class="user-info">
-        <el-avatar :size="80" :src="userStore.user?.avatar" class="user-avatar">
+        <el-avatar :size="80" :src="userAvatarUrl" class="user-avatar">
           {{ userStore.user?.username?.charAt(0) }}
         </el-avatar>
         <div class="user-details">
           <h3>{{ userStore.user?.username }}</h3>
-          <p>{{ userStore.user?.email }}</p>
+        </div>
+        <div class="user-stats">
+          <div class="stat-item" @click="showFollowingList = true">
+            <div class="stat-value">{{ followingCount }}</div>
+            <div class="stat-label">关注</div>
+          </div>
+          <div class="stat-item" @click="showFollowersList = true">
+            <div class="stat-value">{{ followersCount }}</div>
+            <div class="stat-label">粉丝</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">{{ favorites.length + favoriteNotes.length }}</div>
+            <div class="stat-label">收藏</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">{{ notes.length }}</div>
+            <div class="stat-label">笔记</div>
+          </div>
         </div>
       </div>
 
@@ -57,6 +74,22 @@
               <span class="tab-label">
                 <el-icon><EditPen /></el-icon>
                 草稿箱
+              </span>
+            </template>
+          </el-tab-pane>
+          <el-tab-pane label="历史记录" name="history">
+            <template #label>
+              <span class="tab-label">
+                <el-icon><Clock /></el-icon>
+                历史记录
+              </span>
+            </template>
+          </el-tab-pane>
+          <el-tab-pane label="动态" name="following-notes">
+            <template #label>
+              <span class="tab-label">
+                <el-icon><Bell /></el-icon>
+                动态
               </span>
             </template>
           </el-tab-pane>
@@ -303,6 +336,240 @@
         <el-empty v-else description="暂无草稿" />
       </div>
     </el-card>
+
+    <!-- 历史记录 -->
+    <el-card v-if="activeTab === 'history'" class="content-card">
+      <template #header>
+        <div class="notes-header">
+          <h3>
+            <el-icon><Clock /></el-icon>
+            历史记录
+          </h3>
+          <el-button
+            type="danger"
+            size="small"
+            @click="handleClearHistory"
+            :disabled="histories.length === 0"
+          >
+            清空历史
+          </el-button>
+        </div>
+      </template>
+
+      <div v-loading="historyLoading" class="content-area">
+        <div v-if="histories.length > 0" class="items-grid">
+          <!-- 菜品历史 -->
+          <el-card
+            v-for="item in histories.filter(h => h.type === 'dish' && h.dish)"
+            :key="'history-dish-' + item.id"
+            class="item-card"
+            shadow="hover"
+            @click="goToDetail(item.dish.id)"
+          >
+            <div class="item-image-wrapper">
+              <img :src="getImageUrl(item.dish.image)" :alt="item.dish.name" class="item-image" />
+              <div class="item-overlay">
+                <el-tag type="info" size="small">菜品</el-tag>
+              </div>
+            </div>
+            <div class="item-info">
+              <h4 class="item-name">{{ item.dish.name }}</h4>
+              <p class="item-description">{{ item.dish.description || '暂无描述' }}</p>
+              <div class="item-meta">
+                <span class="note-date">{{ formatDate(item.viewedAt) }}</span>
+              </div>
+            </div>
+          </el-card>
+
+          <!-- 笔记历史 -->
+          <el-card
+            v-for="item in histories.filter(h => h.type === 'note' && h.note)"
+            :key="'history-note-' + item.id"
+            class="item-card note-card"
+            shadow="hover"
+            @click="goToNoteDetail(item.note.id)"
+          >
+            <div class="item-image-wrapper">
+              <img :src="getImageUrl(item.note.image)" :alt="item.note.name" class="item-image" />
+              <div class="item-overlay">
+                <el-tag type="success" size="small">笔记</el-tag>
+              </div>
+            </div>
+            <div class="item-info">
+              <h4 class="item-name">{{ item.note.name }}</h4>
+              <p class="item-description">{{ item.note.description || '暂无描述' }}</p>
+              <div class="item-meta">
+                <span class="note-date">{{ formatDate(item.viewedAt) }}</span>
+                <div v-if="item.note.tags && item.note.tags.length > 0" class="note-tags">
+                  <el-tag
+                    v-for="tag in item.note.tags.slice(0, 3)"
+                    :key="tag"
+                    size="small"
+                    style="margin-right: 4px"
+                  >
+                    {{ tag }}
+                  </el-tag>
+                </div>
+              </div>
+            </div>
+          </el-card>
+        </div>
+        <el-empty v-else description="暂无历史记录" />
+      </div>
+    </el-card>
+
+    <!-- 关注用户动态 -->
+    <el-card v-if="activeTab === 'following-notes'" class="content-card">
+      <template #header>
+        <div class="notes-header">
+          <h3>
+            <el-icon><Bell /></el-icon>
+            关注用户动态
+          </h3>
+        </div>
+      </template>
+
+      <div v-loading="followingNotesLoading" class="content-area">
+        <div v-if="followingNotes.length > 0" class="items-grid">
+          <el-card
+            v-for="note in followingNotes"
+            :key="note.id"
+            class="item-card note-card"
+            shadow="hover"
+            @click="goToNoteDetail(note.id)"
+          >
+            <div class="item-image-wrapper">
+              <img :src="getImageUrl(note.image)" :alt="note.name" class="item-image" />
+              <div class="item-overlay">
+                <el-button
+                  :type="note.isFavorite ? 'danger' : 'default'"
+                  :icon="note.isFavorite ? StarFilled : Star"
+                  circle
+                  size="small"
+                  @click.stop="handleToggleFavoriteNote(note.id, note.isFavorite || false)"
+                />
+              </div>
+            </div>
+            <div class="item-info">
+              <h4 class="item-name">{{ note.name }}</h4>
+              <p class="item-description">{{ note.description }}</p>
+              <div class="item-meta">
+                <span class="note-date">{{ formatDate(note.createdAt) }}</span>
+                <span 
+                  class="note-author-name" 
+                  @click.stop="goToUserProfile(note.author.id)" 
+                  style="cursor: pointer; color: #409eff;"
+                >
+                  by {{ note.author.username }}
+                </span>
+                <div v-if="note.tags && note.tags.length > 0" class="note-tags">
+                  <el-tag
+                    v-for="tag in note.tags.slice(0, 3)"
+                    :key="tag"
+                    size="small"
+                    style="margin-right: 4px"
+                  >
+                    {{ tag }}
+                  </el-tag>
+                </div>
+              </div>
+            </div>
+          </el-card>
+        </div>
+        <el-empty v-else description="暂无关注用户的动态" />
+      </div>
+    </el-card>
+
+    <!-- 关注列表对话框 -->
+    <el-dialog
+      v-model="showFollowingList"
+      title="关注列表"
+      width="500px"
+    >
+      <div v-loading="followingLoading" class="user-list">
+        <div v-if="following.length > 0">
+          <div
+            v-for="user in following"
+            :key="user.id"
+            class="user-list-item"
+          >
+            <el-avatar :size="40" :src="getImageUrl(user.avatar || '')" @click="goToUserProfile(user.id)" style="cursor: pointer;">
+              {{ user.username?.charAt(0) }}
+            </el-avatar>
+            <div class="user-list-info" @click="goToUserProfile(user.id)" style="cursor: pointer; flex: 1;">
+              <div class="user-list-name">{{ user.username }}</div>
+            </div>
+            <div class="user-list-actions">
+              <el-button
+                type="success"
+                size="small"
+                @click.stop="goToMessages(user.id)"
+              >
+                私信
+              </el-button>
+              <el-button
+                type="danger"
+                size="small"
+                @click.stop="handleUnfollow(user.id)"
+              >
+                取消关注
+              </el-button>
+            </div>
+          </div>
+        </div>
+        <el-empty v-else description="暂无关注" />
+      </div>
+    </el-dialog>
+
+    <!-- 粉丝列表对话框 -->
+    <el-dialog
+      v-model="showFollowersList"
+      title="粉丝列表"
+      width="500px"
+    >
+      <div v-loading="followersLoading" class="user-list">
+        <div v-if="followers.length > 0">
+          <div
+            v-for="user in followers"
+            :key="user.id"
+            class="user-list-item"
+          >
+            <el-avatar :size="40" :src="getImageUrl(user.avatar || '')" @click="goToUserProfile(user.id)" style="cursor: pointer;">
+              {{ user.username?.charAt(0) }}
+            </el-avatar>
+            <div class="user-list-info" @click="goToUserProfile(user.id)" style="cursor: pointer; flex: 1;">
+              <div class="user-list-name">{{ user.username }}</div>
+            </div>
+            <div class="user-list-actions">
+              <el-button
+                type="success"
+                size="small"
+                @click.stop="goToMessages(user.id)"
+              >
+                私信
+              </el-button>
+              <el-button
+                v-if="!isFollowingUser(user.id)"
+                type="primary"
+                size="small"
+                @click.stop="handleFollow(user.id)"
+              >
+                关注
+              </el-button>
+              <el-button
+                v-else
+                type="danger"
+                size="small"
+                @click.stop="handleUnfollow(user.id)"
+              >
+                取消关注
+              </el-button>
+            </div>
+          </div>
+        </div>
+        <el-empty v-else description="暂无粉丝" />
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -313,13 +580,18 @@ import { useUserStore } from '@/stores/user'
 import { useDishesStore } from '@/stores/dishes'
 import { useNotesStore } from '@/stores/notes'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Star, StarFilled, Clock, Document, Edit, Delete, ArrowLeft, Search, EditPen } from '@element-plus/icons-vue'
+import { Star, StarFilled, Clock, Document, Edit, Delete, ArrowLeft, Search, EditPen, Bell } from '@element-plus/icons-vue'
 import type { Dish } from '@/stores/dishes'
 import type { Note } from '@/stores/notes'
 import { getImageUrl } from '@/utils/image'
 import api from '@/api'
 
 const route = useRoute()
+
+const userAvatarUrl = computed(() => {
+  if (!userStore.user?.avatar) return ''
+  return getImageUrl(userStore.user.avatar)
+})
 const router = useRouter()
 const userStore = useUserStore()
 const dishesStore = useDishesStore()
@@ -328,18 +600,28 @@ const favorites = ref<Dish[]>([])
 const favoriteNotes = ref<Note[]>([])
 const notes = ref<Note[]>([])
 const drafts = ref<Note[]>([])
+const histories = ref<any[]>([])
+const followingNotes = ref<Note[]>([])
+const following = ref<any[]>([])
+const followers = ref<any[]>([])
 const loading = ref(false)
 const favoriteNotesLoading = ref(false)
 const notesLoading = ref(false)
 const draftsLoading = ref(false)
+const historyLoading = ref(false)
+const followingNotesLoading = ref(false)
+const followingLoading = ref(false)
+const followersLoading = ref(false)
 const activeTab = ref<string>('favorite-dishes')
 const favoriteDishSearchKeyword = ref('')
 const favoriteNoteSearchKeyword = ref('')
+const showFollowingList = ref(false)
+const showFollowersList = ref(false)
 
 onMounted(async () => {
   // 根据路由参数设置初始tab
   const tab = route.query.tab as string
-  if (tab === 'notes' || tab === 'favorite-dishes' || tab === 'favorite-notes' || tab === 'drafts') {
+  if (tab === 'notes' || tab === 'favorite-dishes' || tab === 'favorite-notes' || tab === 'drafts' || tab === 'history' || tab === 'following-notes') {
     activeTab.value = tab
   }
   
@@ -347,14 +629,22 @@ onMounted(async () => {
   await loadFavoriteNotes()
   await loadNotes()
   await loadDrafts()
+  await loadHistory()
+  await loadFollowingNotes()
+  await loadFollowing()
+  await loadFollowers()
 })
 
 // 监听路由变化
 watch(() => route.query.tab, (newTab) => {
-  if (newTab === 'notes' || newTab === 'favorite-dishes' || newTab === 'favorite-notes' || newTab === 'drafts') {
+  if (newTab === 'notes' || newTab === 'favorite-dishes' || newTab === 'favorite-notes' || newTab === 'drafts' || newTab === 'history' || newTab === 'following-notes') {
     activeTab.value = newTab as string
     if (newTab === 'drafts') {
       loadDrafts()
+    } else if (newTab === 'history') {
+      loadHistory()
+    } else if (newTab === 'following-notes') {
+      loadFollowingNotes()
     }
   }
 })
@@ -410,6 +700,24 @@ const handleRemoveFavorite = async (dishId: number) => {
   }
 }
 
+const handleToggleFavoriteNote = async (noteId: number, isFavorite: boolean) => {
+  try {
+    const result = await notesStore.toggleFavorite(noteId)
+    if (result.success) {
+      // 更新本地状态
+      const note = followingNotes.value.find(n => n.id === noteId)
+      if (note) {
+        note.isFavorite = !isFavorite
+      }
+      ElMessage.success(isFavorite ? '已取消收藏' : '收藏成功')
+    } else {
+      ElMessage.error(result.message || '操作失败')
+    }
+  } catch (error: any) {
+    ElMessage.error('操作失败')
+  }
+}
+
 const handleRemoveFavoriteNote = async (noteId: number) => {
   try {
     await ElMessageBox.confirm('确定要取消收藏吗？', '提示', {
@@ -442,6 +750,14 @@ const loadNotes = async () => {
 
 const goToNoteDetail = (id: number) => {
   router.push(`/note/${id}`)
+}
+
+const goToUserProfile = (userId: number) => {
+  router.push(`/user/${userId}`)
+}
+
+const goToMessages = (userId: number) => {
+  router.push(`/messages?userId=${userId}`)
 }
 
 const loadDrafts = async () => {
@@ -479,6 +795,117 @@ const handleDeleteDraft = async (draftId: number) => {
       ElMessage.error('操作失败')
     }
   }
+}
+
+const loadHistory = async () => {
+  historyLoading.value = true
+  try {
+    const response = await api.get('/history')
+    histories.value = response.data
+  } catch (error) {
+    console.error('加载历史记录失败:', error)
+    histories.value = []
+  } finally {
+    historyLoading.value = false
+  }
+}
+
+const handleClearHistory = async () => {
+  try {
+    await ElMessageBox.confirm('确定要清空所有历史记录吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+
+    await api.delete('/history')
+    histories.value = []
+    ElMessage.success('清空成功')
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      ElMessage.error('清空失败')
+    }
+  }
+}
+
+const followingCount = computed(() => following.value.length)
+const followersCount = computed(() => followers.value.length)
+
+const loadFollowingNotes = async () => {
+  followingNotesLoading.value = true
+  try {
+    const response = await api.get('/notes/following')
+    followingNotes.value = response.data
+  } catch (error) {
+    console.error('加载关注动态失败:', error)
+    followingNotes.value = []
+  } finally {
+    followingNotesLoading.value = false
+  }
+}
+
+const loadFollowing = async () => {
+  followingLoading.value = true
+  try {
+    const response = await api.get('/follow/following')
+    following.value = response.data
+  } catch (error) {
+    console.error('加载关注列表失败:', error)
+    following.value = []
+  } finally {
+    followingLoading.value = false
+  }
+}
+
+const loadFollowers = async () => {
+  followersLoading.value = true
+  try {
+    const response = await api.get('/follow/followers')
+    followers.value = response.data
+  } catch (error) {
+    console.error('加载粉丝列表失败:', error)
+    followers.value = []
+  } finally {
+    followersLoading.value = false
+  }
+}
+
+const handleFollow = async (userId: number) => {
+  try {
+    await api.post(`/follow/${userId}`)
+    ElMessage.success('关注成功')
+    await loadFollowing()
+    await loadFollowers()
+    await loadFollowingNotes()
+  } catch (error: any) {
+    const errorMessage = error.response?.data?.message || error.response?.data?.error || '操作失败'
+    ElMessage.error(errorMessage)
+  }
+}
+
+const handleUnfollow = async (userId: number) => {
+  try {
+    await ElMessageBox.confirm('确定要取消关注吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+
+    await api.delete(`/follow/${userId}`)
+    ElMessage.success('取消关注成功')
+    await loadFollowing()
+    await loadFollowers()
+    await loadFollowingNotes()
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || '操作失败'
+      ElMessage.error(errorMessage)
+    }
+  }
+}
+
+const isFollowingUser = (userId: number) => {
+  return following.value.some(u => u.id === userId)
 }
 
 const handleToggleVisibility = async (noteId: number, isPublic: boolean) => {
@@ -785,10 +1212,15 @@ const filteredFavoriteNotes = computed(() => {
   align-items: center;
   gap: 24px;
   padding: 20px 0;
+  justify-content: space-between;
 }
 
 .user-avatar {
   flex-shrink: 0;
+}
+
+.user-details {
+  flex: 1;
 }
 
 .user-details h3 {
@@ -800,6 +1232,33 @@ const filteredFavoriteNotes = computed(() => {
 .user-details p {
   color: #666;
   font-size: 14px;
+}
+
+.user-stats {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  padding-left: 32px;
+  border-left: 1px solid #e0e0e0;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 600;
+  color: #333;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #666;
 }
 
 .notes-header {
@@ -822,6 +1281,45 @@ const filteredFavoriteNotes = computed(() => {
   justify-content: space-between;
   align-items: center;
   gap: 16px;
+}
+
+.user-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.user-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.user-list-item:last-child {
+  border-bottom: none;
+}
+
+.user-list-info {
+  flex: 1;
+}
+
+.user-list-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.user-list-email {
+  font-size: 12px;
+  color: #999;
+}
+
+.user-list-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .search-header h3 {
@@ -908,6 +1406,31 @@ const filteredFavoriteNotes = computed(() => {
   .notes-header .el-button {
     width: 100%;
     min-height: 44px;
+  }
+
+  .user-info {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .user-details h3 {
+    font-size: 20px;
+  }
+
+  .user-stats {
+    flex-direction: row;
+    justify-content: center;
+    padding-left: 0;
+    border-left: none;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 16px;
+    width: 100%;
+    gap: 24px;
+  }
+
+  .stat-value {
+    font-size: 24px;
   }
 }
 

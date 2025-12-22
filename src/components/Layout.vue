@@ -65,7 +65,7 @@
           </el-button>
           <el-dropdown v-else @command="handleCommand" trigger="hover">
             <span class="user-info" @click="goToProfile">
-              <el-avatar :size="32" :src="userStore.user?.avatar">
+              <el-avatar :size="32" :src="userAvatarUrl">
                 {{ userStore.user?.username?.charAt(0) }}
               </el-avatar>
               <span class="username">{{ userStore.user?.username }}</span>
@@ -89,6 +89,27 @@
                   <el-icon><Document /></el-icon>
                   我的笔记
                 </el-dropdown-item>
+                <el-dropdown-item command="drafts">
+                  <el-icon><EditPen /></el-icon>
+                  草稿箱
+                </el-dropdown-item>
+                <el-dropdown-item command="history">
+                  <el-icon><Clock /></el-icon>
+                  历史记录
+                </el-dropdown-item>
+                <el-dropdown-item command="messages" divided>
+                  <el-icon><Message /></el-icon>
+                  私信
+                  <el-badge
+                    v-if="messagesStore.unreadCount > 0"
+                    :value="messagesStore.unreadCount"
+                    class="message-badge"
+                  />
+                </el-dropdown-item>
+                <el-dropdown-item command="settings">
+                  <el-icon><Setting /></el-icon>
+                  账号设置
+                </el-dropdown-item>
                 <el-dropdown-item command="logout" divided>
                   <el-icon><SwitchButton /></el-icon>
                   退出登录
@@ -96,6 +117,17 @@
               </el-dropdown-menu>
             </template>
           </el-dropdown>
+          <el-badge
+            v-if="userStore.isLoggedIn && messagesStore.unreadCount > 0"
+            :value="messagesStore.unreadCount"
+            class="header-message-badge"
+          >
+            <el-button
+              circle
+              @click="$router.push('/messages')"
+              :icon="Message"
+            />
+          </el-badge>
         </div>
       </div>
     </el-header>
@@ -106,20 +138,38 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '../stores/user'
-import { Food, Search, User, ArrowDown, SwitchButton, Edit, Compass, Star, Document } from '@element-plus/icons-vue'
+import { useMessagesStore } from '../stores/messages'
+import { getImageUrl } from '@/utils/image'
+import { Food, Search, User, ArrowDown, SwitchButton, Edit, Compass, Star, Document, EditPen, Clock, Message, Setting } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
+const messagesStore = useMessagesStore()
 const searchKeyword = ref('')
+
+const userAvatarUrl = computed(() => {
+  if (!userStore.user?.avatar) return ''
+  return getImageUrl(userStore.user.avatar)
+})
 
 // 同步路由查询参数到搜索框
 onMounted(() => {
   if (route.query.keyword) {
     searchKeyword.value = route.query.keyword as string
+  }
+  // 加载未读消息数
+  if (userStore.isLoggedIn) {
+    messagesStore.fetchUnreadCount()
+    // 定期刷新未读消息数
+    setInterval(() => {
+      if (userStore.isLoggedIn) {
+        messagesStore.fetchUnreadCount()
+      }
+    }, 30000) // 每30秒刷新一次
   }
 })
 
@@ -148,6 +198,14 @@ const handleCommand = (command: string) => {
     router.push('/profile?tab=favorite-notes')
   } else if (command === 'notes') {
     router.push('/profile?tab=notes')
+  } else if (command === 'drafts') {
+    router.push('/profile?tab=drafts')
+  } else if (command === 'history') {
+    router.push('/profile?tab=history')
+  } else if (command === 'messages') {
+    router.push('/messages')
+  } else if (command === 'settings') {
+    router.push('/settings')
   } else if (command === 'logout') {
     userStore.logout()
     router.push('/')

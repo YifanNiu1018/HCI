@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -20,10 +21,10 @@ public class FileUploadController {
     private static final String UPLOAD_DIR = "uploads";
 
     @PostMapping("/image")
-    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file) {
         try {
             if (file.isEmpty()) {
-                return ResponseEntity.badRequest().body("文件为空");
+                return ResponseEntity.badRequest().body(Map.of("error", "文件为空"));
             }
 
             // 创建上传目录
@@ -44,10 +45,11 @@ public class FileUploadController {
             Path filePath = Paths.get(UPLOAD_DIR, filename);
             Files.write(filePath, file.getBytes());
 
-            // 返回相对路径
-            return ResponseEntity.ok("/uploads/" + filename);
+            // 返回JSON格式，包含url字段
+            String imageUrl = "/uploads/" + filename;
+            return ResponseEntity.ok(Map.of("url", imageUrl));
         } catch (IOException e) {
-            return ResponseEntity.badRequest().body("文件上传失败: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", "文件上传失败: " + e.getMessage()));
         }
     }
 }

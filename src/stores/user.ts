@@ -7,6 +7,9 @@ export interface User {
   username: string
   email: string
   avatar?: string
+  followingCount?: number
+  followersCount?: number
+  isFollowing?: boolean
 }
 
 export const useUserStore = defineStore('user', () => {

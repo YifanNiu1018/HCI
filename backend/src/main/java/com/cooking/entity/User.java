@@ -3,17 +3,20 @@ package com.cooking.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.HashSet;
 import java.util.Set;
-import com.cooking.entity.Note;
 
 @Entity
 @Table(name = "users")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"following", "followers", "favoriteDishes", "favoriteNotes"})
+@EqualsAndHashCode(exclude = {"following", "followers", "favoriteDishes", "favoriteNotes"})
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,5 +48,16 @@ public class User {
         inverseJoinColumns = @JoinColumn(name = "note_id")
     )
     private Set<Note> favoriteNotes = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "user_follows",
+        joinColumns = @JoinColumn(name = "follower_id"),
+        inverseJoinColumns = @JoinColumn(name = "following_id")
+    )
+    private Set<User> following = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "following")
+    private Set<User> followers = new HashSet<>();
 }
 
