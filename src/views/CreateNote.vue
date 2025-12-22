@@ -525,6 +525,46 @@ const handleSubmit = async () => {
   .note-form :deep(.el-form-item) {
     margin-bottom: 24px;
   }
+
+  .note-form :deep(.el-form-item__label) {
+    font-size: 14px;
+    padding-bottom: 8px;
+  }
+
+  .note-form :deep(.el-input),
+  .note-form :deep(.el-textarea) {
+    font-size: 16px; /* 防止iOS自动缩放 */
+  }
+
+  .note-form :deep(.el-button) {
+    min-height: 44px; /* 触摸友好 */
+    width: 100%;
+    margin-bottom: 12px;
+  }
+
+  .note-form :deep(.el-button + .el-button) {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .create-note-container {
+    padding: 16px 12px;
+  }
+
+  .create-note-container :deep(.el-card__body) {
+    padding: 20px 16px;
+  }
+
+  .create-note-container :deep(.el-card__header) {
+    padding: 16px;
+  }
+
+  .note-form :deep(.el-form-item__label) {
+    width: 100% !important;
+    text-align: left !important;
+    padding-bottom: 8px;
+  }
 }
 </style>
 

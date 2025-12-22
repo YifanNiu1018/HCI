@@ -424,6 +424,59 @@ const handleToggleFavorite = async (dishId: number, isFavorite: boolean) => {
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
+
+@media (max-width: 768px) {
+  .dishes-container {
+    padding: 16px;
+  }
+
+  .dishes-header h1 {
+    font-size: 24px;
+  }
+
+  .dishes-header p {
+    font-size: 14px;
+  }
+
+  .category-filters {
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .category-tag {
+    padding: 6px 12px;
+    font-size: 13px;
+    min-height: 36px;
+  }
+
+  .content-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+  }
+
+  .pagination-wrapper {
+    padding: 16px;
+    margin-top: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .category-filters {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .category-filters::-webkit-scrollbar {
+    display: none;
+  }
+}
 :deep(.meta-tag) {
   background: transparent !important;
   border: none !important;

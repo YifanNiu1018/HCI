@@ -792,12 +792,85 @@ const toggleCommentForm = () => {
 }
 
 @media (max-width: 768px) {
+  .note-modal-container {
+    padding: 16px;
+    max-width: 100%;
+  }
+
+  .note-modal-content {
+    padding: 16px;
+  }
+
   .detail-header {
     grid-template-columns: 1fr;
+    gap: 20px;
   }
 
   .detail-image-wrapper {
     aspect-ratio: 4 / 3;
+    height: 250px;
+  }
+
+  .detail-title {
+    font-size: 22px;
+  }
+
+  .detail-description {
+    font-size: 14px;
+  }
+
+  .section-title {
+    font-size: 16px;
+  }
+
+  .ingredients-list {
+    grid-template-columns: 1fr;
+  }
+
+  .ingredients-list li,
+  .steps-list li {
+    padding: 16px 0;
+  }
+
+  .step-content {
+    font-size: 14px;
+  }
+
+  .detail-actions .el-button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .comment-footer-bar {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .comment-footer-bar .el-button {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .note-modal-container {
+    padding: 12px;
+  }
+
+  .note-modal-content {
+    padding: 12px;
+  }
+
+  .detail-image-wrapper {
+    height: 200px;
+  }
+
+  .detail-title {
+    font-size: 20px;
+  }
+
+  .section-title {
+    font-size: 15px;
   }
 }
 </style>

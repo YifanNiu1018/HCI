@@ -413,6 +413,13 @@ const handleToggleNoteFavorite = async (noteId: number, currentFavoriteStatus: b
   overflow: hidden;
 }
 
+@media (max-width: 768px) {
+  .banner {
+    padding: 50px 16px;
+    margin-bottom: 24px;
+  }
+}
+
 .banner::before {
   content: '';
   position: absolute;
@@ -444,6 +451,17 @@ const handleToggleNoteFavorite = async (noteId: number, currentFavoriteStatus: b
   font-weight: 300;
   position: relative;
   z-index: 1;
+}
+
+@media (max-width: 768px) {
+  .banner h1 {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+
+  .banner p {
+    font-size: 16px;
+  }
 }
 
 .search-results {
@@ -483,6 +501,14 @@ const handleToggleNoteFavorite = async (noteId: number, currentFavoriteStatus: b
   flex-wrap: wrap;
 }
 
+@media (max-width: 768px) {
+  .hot-search-section {
+    padding: 12px 16px;
+    margin-bottom: 24px;
+    gap: 8px;
+  }
+}
+
 .hot-search-label {
   font-size: 14px;
   color: #666;
@@ -508,6 +534,18 @@ const handleToggleNoteFavorite = async (noteId: number, currentFavoriteStatus: b
   transition: all 0.2s;
   user-select: none;
   white-space: nowrap;
+  min-height: 36px; /* 触摸友好 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .hot-search-tag {
+    padding: 8px 12px;
+    font-size: 12px;
+    min-height: 32px;
+  }
 }
 
 .hot-search-tag:hover {
@@ -543,6 +581,22 @@ const handleToggleNoteFavorite = async (noteId: number, currentFavoriteStatus: b
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px;
+}
+
+@media (max-width: 768px) {
+  .content-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 0 12px;
+  }
 }
 
 .note-card {

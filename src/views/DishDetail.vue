@@ -554,12 +554,76 @@ const getDifficultyType = (difficulty: string) => {
 }
 
 @media (max-width: 768px) {
+  .detail-container {
+    padding: 16px;
+  }
+
   .detail-header {
     grid-template-columns: 1fr;
+    gap: 20px;
   }
 
   .detail-image-wrapper {
-    height: 300px;
+    height: 250px;
+  }
+
+  .detail-title {
+    font-size: 22px;
+  }
+
+  .detail-description {
+    font-size: 14px;
+  }
+
+  .detail-meta {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .detail-main {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .recommendations-sidebar {
+    position: static;
+    order: -1;
+  }
+
+  .section-title {
+    font-size: 18px;
+  }
+
+  .ingredients-list li,
+  .steps-list li {
+    padding: 16px 0;
+  }
+
+  .step-content {
+    font-size: 14px;
+  }
+
+  .detail-actions .el-button {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .detail-container {
+    padding: 12px;
+  }
+
+  .detail-image-wrapper {
+    height: 200px;
+  }
+
+  .detail-title {
+    font-size: 20px;
+  }
+
+  .section-title {
+    font-size: 16px;
   }
 }
 

@@ -184,14 +184,37 @@ const handleCommand = (command: string) => {
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  gap: 12px;
 }
 
 .header-center {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 8px;
   flex: 1;
   justify-content: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    padding: 0 16px;
+    gap: 8px;
+  }
+
+  .header-center {
+    gap: 4px;
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+    padding-top: 8px;
+    border-top: 1px solid #f0f0f0;
+    margin-top: 8px;
+  }
+
+  .header-center:empty {
+    display: none;
+  }
 }
 
 .logo {
@@ -205,6 +228,24 @@ const handleCommand = (command: string) => {
   transition: all 0.3s;
   padding: 8px 12px;
   border-radius: 8px;
+  min-height: 44px; /* 触摸友好 */
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .logo {
+    font-size: 18px;
+    gap: 6px;
+    padding: 6px 10px;
+  }
+
+  .logo .el-icon {
+    font-size: 24px;
+  }
+
+  .logo span {
+    display: none; /* 移动端隐藏文字，只显示图标 */
+  }
 }
 
 .logo:hover {
@@ -224,6 +265,22 @@ const handleCommand = (command: string) => {
 
 .search-input {
   width: 320px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .search-input {
+    width: 100%;
+    max-width: 200px;
+    flex: 1;
+    min-width: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-input {
+    max-width: 150px;
+  }
 }
 
 .search-input :deep(.el-input__wrapper) {
@@ -263,6 +320,20 @@ const handleCommand = (command: string) => {
   color: #333;
 }
 
+@media (max-width: 768px) {
+  .username {
+    display: none; /* 移动端隐藏用户名 */
+  }
+
+  .user-info {
+    padding: 4px;
+  }
+
+  .header-right {
+    gap: 8px;
+  }
+}
+
 .main-content {
   width: 100%;
   padding: 0;
@@ -279,6 +350,15 @@ const handleCommand = (command: string) => {
   display: flex;
   align-items: center;
   gap: 4px;
+  min-height: 44px; /* 触摸友好 */
+}
+
+@media (max-width: 768px) {
+  .nav-button {
+    font-size: 14px;
+    padding: 8px 12px;
+    min-height: 40px;
+  }
 }
 
 .nav-button:hover {
@@ -306,6 +386,16 @@ const handleCommand = (command: string) => {
   border-radius: 20px;
   transition: all 0.3s;
   box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+  min-height: 44px; /* 触摸友好 */
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .publish-button {
+    font-size: 14px;
+    padding: 8px 16px;
+    min-height: 40px;
+  }
 }
 
 .publish-button:hover {

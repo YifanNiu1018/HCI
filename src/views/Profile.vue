@@ -739,13 +739,75 @@ const filteredFavoriteNotes = computed(() => {
 }
 
 @media (max-width: 768px) {
+  .profile-container {
+    padding: 20px 16px;
+  }
+
+  .profile-card :deep(.el-card__header) {
+    padding: 20px;
+  }
+
+  .profile-header h2 {
+    font-size: 20px;
+  }
+
+  .user-info {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .user-details h3 {
+    font-size: 20px;
+  }
+
+  .items-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+  }
+
   .search-header {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
+  }
+
+  .search-header h3 {
+    font-size: 18px;
   }
 
   .search-input {
     width: 100%;
+  }
+
+  .notes-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .notes-header h3 {
+    font-size: 18px;
+  }
+
+  .notes-header .el-button {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .items-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .item-name {
+    font-size: 14px;
+  }
+
+  .item-description {
+    font-size: 12px;
   }
 }
 
