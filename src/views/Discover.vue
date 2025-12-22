@@ -514,23 +514,27 @@ const goToDishDetail = (id: number) => {
 .discover-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 32px 24px;
 }
 
 .discover-header {
   text-align: center;
-  margin-bottom: 48px;
+  margin-bottom: 56px;
+  padding: 40px 0;
 }
 
 .discover-header h1 {
-  font-size: 36px;
-  color: #333;
-  margin-bottom: 12px;
+  font-size: 42px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 16px;
+  letter-spacing: -0.5px;
 }
 
 .discover-header p {
-  font-size: 18px;
+  font-size: 20px;
   color: #666;
+  font-weight: 300;
 }
 
 .discover-cards {
@@ -540,13 +544,16 @@ const goToDishDetail = (id: number) => {
 }
 
 .discover-card {
-  border-radius: 16px;
-  transition: transform 0.3s, box-shadow 0.3s;
+  border-radius: 20px;
+  border: 1px solid #f0f0f0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #fff;
 }
 
 .discover-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-8px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+  border-color: #e0e0e0;
 }
 
 .card-header {

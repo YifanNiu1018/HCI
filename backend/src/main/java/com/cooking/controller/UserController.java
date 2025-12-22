@@ -1,10 +1,12 @@
 package com.cooking.controller;
 
 import com.cooking.dto.DishResponse;
+import com.cooking.dto.NoteResponse;
 import com.cooking.dto.UserResponse;
 import com.cooking.entity.User;
 import com.cooking.repository.UserRepository;
 import com.cooking.service.DishService;
+import com.cooking.service.NoteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,6 +21,7 @@ public class UserController {
 
     private final UserRepository userRepository;
     private final DishService dishService;
+    private final NoteService noteService;
 
     @GetMapping("/info")
     public ResponseEntity<UserResponse> getUserInfo() {
@@ -33,6 +36,16 @@ public class UserController {
         try {
             List<DishResponse> favorites = dishService.getFavorites();
             return ResponseEntity.ok(favorites);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/favorite-notes")
+    public ResponseEntity<List<NoteResponse>> getFavoriteNotes() {
+        try {
+            List<NoteResponse> favoriteNotes = noteService.getFavoriteNotes();
+            return ResponseEntity.ok(favoriteNotes);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }

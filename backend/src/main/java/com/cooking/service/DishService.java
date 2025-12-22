@@ -10,6 +10,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,6 +38,21 @@ public class DishService {
                     return DishResponse.from(dish, isFavorite);
                 })
                 .collect(Collectors.toList());
+    }
+
+    public Page<DishResponse> getAllDishesWithPagination(String category, Pageable pageable) {
+        Page<Dish> dishPage;
+        if (category != null && !category.trim().isEmpty() && !category.equals("all")) {
+            dishPage = dishRepository.findByCategory(category, pageable);
+        } else {
+            dishPage = dishRepository.findAll(pageable);
+        }
+
+        String username = getCurrentUsername();
+        return dishPage.map(dish -> {
+            boolean isFavorite = username != null && isFavorite(dish.getId(), username);
+            return DishResponse.from(dish, isFavorite);
+        });
     }
 
     public DishResponse getDishById(Long id) {
@@ -84,6 +102,21 @@ public class DishService {
         return user.getFavoriteDishes().stream()
                 .map(dish -> DishResponse.from(dish, true))
                 .collect(Collectors.toList());
+    }
+
+    public List<DishResponse> getDishesByCategory(String category) {
+        List<Dish> dishes = dishRepository.findByCategory(category);
+        String username = getCurrentUsername();
+        return dishes.stream()
+                .map(dish -> {
+                    boolean isFavorite = username != null && isFavorite(dish.getId(), username);
+                    return DishResponse.from(dish, isFavorite);
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<String> getAllCategories() {
+        return dishRepository.findAllDistinctCategories();
     }
 
     private boolean isFavorite(Long dishId, String username) {

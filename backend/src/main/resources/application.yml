@@ -20,6 +20,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        hbm2ddl:
+          auto: update
     database-platform: org.hibernate.dialect.H2Dialect
 
   jackson:

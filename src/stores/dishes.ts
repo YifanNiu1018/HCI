@@ -14,6 +14,7 @@ export interface Dish {
   cookingTime: number
   servings: number
   isFavorite?: boolean
+  tags?: string[]
 }
 
 export const useDishesStore = defineStore('dishes', () => {
@@ -26,9 +27,18 @@ export const useDishesStore = defineStore('dishes', () => {
     try {
       const params = keyword ? { keyword } : {}
       const response = await api.get('/dishes', { params })
-      dishes.value = response.data
+      // 确保返回的是数组
+      if (Array.isArray(response.data)) {
+        dishes.value = response.data
+      } else if (response.data && Array.isArray(response.data.content)) {
+        // 如果是分页响应
+        dishes.value = response.data.content
+      } else {
+        dishes.value = []
+      }
     } catch (error) {
       console.error('获取菜品列表失败:', error)
+      dishes.value = []
     } finally {
       loading.value = false
     }
@@ -78,6 +88,30 @@ export const useDishesStore = defineStore('dishes', () => {
     }
   }
 
+  async function fetchCategories() {
+    try {
+      const response = await api.get('/dishes/categories')
+      return response.data
+    } catch (error) {
+      console.error('获取分类列表失败:', error)
+      throw error
+    }
+  }
+
+  async function fetchDishesByCategory(category: string) {
+    loading.value = true
+    try {
+      const response = await api.get(`/dishes/category/${encodeURIComponent(category)}`)
+      dishes.value = response.data
+      return response.data
+    } catch (error) {
+      console.error('获取分类菜品失败:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     dishes,
     currentDish,
@@ -85,7 +119,9 @@ export const useDishesStore = defineStore('dishes', () => {
     fetchDishes,
     fetchDishById,
     toggleFavorite,
-    fetchFavorites
+    fetchFavorites,
+    fetchCategories,
+    fetchDishesByCategory
   }
 })
 

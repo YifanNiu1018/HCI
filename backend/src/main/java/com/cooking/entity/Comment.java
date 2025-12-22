@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import com.cooking.entity.Note;
 
 @Entity
 @Table(name = "comments")
@@ -30,8 +31,12 @@ public class Comment {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dish_id", nullable = false)
+    @JoinColumn(name = "dish_id", nullable = true)
     private Dish dish;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "note_id", nullable = true)
+    private Note note;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")

@@ -52,17 +52,25 @@ public class NoteService {
     }
 
     public List<NoteResponse> getPublicNotes() {
+        String username = getCurrentUsername();
         return noteRepository.findByIsPublicTrue().stream()
-                .map(NoteResponse::from)
+                .map(note -> {
+                    boolean isFavorite = username != null && isFavorite(note.getId(), username);
+                    return NoteResponse.from(note, isFavorite);
+                })
                 .collect(Collectors.toList());
     }
 
     public List<NoteResponse> searchPublicNotes(String keyword) {
+        String username = getCurrentUsername();
         if (keyword == null || keyword.trim().isEmpty()) {
             return getPublicNotes();
         }
         return noteRepository.searchPublicNotes(keyword.trim()).stream()
-                .map(NoteResponse::from)
+                .map(note -> {
+                    boolean isFavorite = username != null && isFavorite(note.getId(), username);
+                    return NoteResponse.from(note, isFavorite);
+                })
                 .collect(Collectors.toList());
     }
 
@@ -83,7 +91,8 @@ public class NoteService {
             }
         }
 
-        return NoteResponse.from(note);
+        boolean isFavorite = username != null && isFavorite(note.getId(), username);
+        return NoteResponse.from(note, isFavorite);
     }
 
     @Transactional
@@ -120,8 +129,64 @@ public class NoteService {
         noteRepository.delete(note);
     }
 
+    @Transactional
+    public NoteResponse toggleFavorite(Long noteId) {
+        String username = getCurrentUsername();
+        if (username == null) {
+            throw new RuntimeException("请先登录");
+        }
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("用户不存在"));
+
+        Note note = noteRepository.findById(noteId)
+                .orElseThrow(() -> new RuntimeException("笔记不存在"));
+
+        // 只能收藏公开的笔记
+        if (!note.getIsPublic()) {
+            throw new RuntimeException("只能收藏公开的笔记");
+        }
+
+        boolean isFavorite;
+        if (user.getFavoriteNotes().contains(note)) {
+            user.getFavoriteNotes().remove(note);
+            isFavorite = false;
+        } else {
+            user.getFavoriteNotes().add(note);
+            isFavorite = true;
+        }
+
+        userRepository.save(user);
+        return NoteResponse.from(note, isFavorite);
+    }
+
+    public List<NoteResponse> getFavoriteNotes() {
+        String username = getCurrentUsername();
+        if (username == null) {
+            throw new RuntimeException("请先登录");
+        }
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("用户不存在"));
+
+        return user.getFavoriteNotes().stream()
+                .map(note -> NoteResponse.from(note, true))
+                .collect(Collectors.toList());
+    }
+
+    private boolean isFavorite(Long noteId, String username) {
+        User user = userRepository.findByUsername(username).orElse(null);
+        if (user == null)
+            return false;
+        return user.getFavoriteNotes().stream()
+                .anyMatch(note -> note.getId().equals(noteId));
+    }
+
     private String getCurrentUsername() {
-        return SecurityContextHolder.getContext().getAuthentication().getName();
+        try {
+            return SecurityContextHolder.getContext().getAuthentication().getName();
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
-

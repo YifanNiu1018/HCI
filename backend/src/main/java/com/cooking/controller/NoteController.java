@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/notes")
@@ -77,6 +78,16 @@ public class NoteController {
         try {
             noteService.deleteNote(id);
             return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/{id}/favorite")
+    public ResponseEntity<Map<String, Boolean>> toggleFavorite(@PathVariable Long id) {
+        try {
+            NoteResponse note = noteService.toggleFavorite(id);
+            return ResponseEntity.ok(Map.of("isFavorite", note.getIsFavorite()));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }

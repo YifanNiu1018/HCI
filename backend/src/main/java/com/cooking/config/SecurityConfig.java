@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -35,7 +36,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**", "/dishes", "/dishes/**", "/images/**", "/uploads/**", "/notes/public/**", "/search/**", "/upload/**").permitAll()
                 .requestMatchers("/notes/*").permitAll()
-                .requestMatchers("/dishes/*/comments").permitAll()
+                .requestMatchers(HttpMethod.GET, "/dishes/*/comments").permitAll()  // GET comments
+                .requestMatchers(HttpMethod.GET, "/notes/*/comments").permitAll()  // GET comments
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

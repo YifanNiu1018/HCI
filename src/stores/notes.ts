@@ -12,6 +12,7 @@ export interface Note {
   tags: string[]
   isPublic: boolean
   createdAt: string
+  isFavorite?: boolean
   author: {
     id: number
     username: string
@@ -57,13 +58,26 @@ export const useNotesStore = defineStore('notes', () => {
     }
   }
 
-  async function fetchPublicNotes() {
+  async function fetchPublicNotes(keyword?: string) {
     loading.value = true
     try {
-      const response = await api.get('/notes/public')
-      publicNotes.value = response.data
+      let response
+      if (keyword && keyword.trim()) {
+        // 使用搜索接口
+        response = await api.get('/notes/public/search', { params: { keyword: keyword.trim() } })
+      } else {
+        // 获取所有公开笔记
+        response = await api.get('/notes/public')
+      }
+      // 确保返回的是数组
+      if (Array.isArray(response.data)) {
+        publicNotes.value = response.data
+      } else {
+        publicNotes.value = []
+      }
     } catch (error) {
       console.error('获取公开笔记失败:', error)
+      publicNotes.value = []
     } finally {
       loading.value = false
     }
@@ -107,6 +121,42 @@ export const useNotesStore = defineStore('notes', () => {
     }
   }
 
+  async function toggleFavorite(noteId: number) {
+    try {
+      const response = await api.post(`/notes/${noteId}/favorite`)
+      const isFavorite = response.data.isFavorite
+      
+      // 更新公开笔记列表中的收藏状态
+      const publicNote = publicNotes.value.find(n => n.id === noteId)
+      if (publicNote) {
+        publicNote.isFavorite = isFavorite
+      }
+      
+      // 更新我的笔记列表中的收藏状态（如果是公开的）
+      const myNote = notes.value.find(n => n.id === noteId)
+      if (myNote) {
+        myNote.isFavorite = isFavorite
+      }
+      
+      return { success: true, isFavorite }
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || '操作失败' }
+    }
+  }
+
+  async function getNoteById(id: number) {
+    loading.value = true
+    try {
+      const response = await api.get(`/notes/${id}`)
+      return response.data
+    } catch (error: any) {
+      console.error('获取笔记详情失败:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     notes,
     publicNotes,
@@ -115,7 +165,9 @@ export const useNotesStore = defineStore('notes', () => {
     fetchMyNotes,
     fetchPublicNotes,
     updateNoteVisibility,
-    deleteNote
+    deleteNote,
+    toggleFavorite,
+    getNoteById
   }
 })
 

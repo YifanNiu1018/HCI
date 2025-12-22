@@ -22,20 +22,26 @@ public class NoteResponse {
     private Boolean isPublic;
     private LocalDateTime createdAt;
     private UserResponse author;
+    private Boolean isFavorite;
+
+    public static NoteResponse from(Note note, Boolean isFavorite) {
+        NoteResponse response = new NoteResponse();
+        response.setId(note.getId());
+        response.setName(note.getName());
+        response.setDescription(note.getDescription());
+        response.setImage(note.getImage());
+        response.setIngredients(note.getIngredients());
+        response.setSteps(note.getSteps());
+        response.setTags(note.getTags());
+        response.setIsPublic(note.getIsPublic());
+        response.setCreatedAt(note.getCreatedAt());
+        response.setAuthor(UserResponse.from(note.getUser()));
+        response.setIsFavorite(isFavorite != null ? isFavorite : false);
+        return response;
+    }
 
     public static NoteResponse from(Note note) {
-        return new NoteResponse(
-            note.getId(),
-            note.getName(),
-            note.getDescription(),
-            note.getImage(),
-            note.getIngredients(),
-            note.getSteps(),
-            note.getTags(),
-            note.getIsPublic(),
-            note.getCreatedAt(),
-            UserResponse.from(note.getUser())
-        );
+        return from(note, false);
     }
 }
 

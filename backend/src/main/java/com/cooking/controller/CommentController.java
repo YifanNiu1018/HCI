@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/dishes/{dishId}/comments")
@@ -33,6 +34,46 @@ public class CommentController {
     public ResponseEntity<List<CommentResponse>> getComments(@PathVariable Long dishId) {
         try {
             List<CommentResponse> comments = commentService.getCommentsByDish(dishId);
+            return ResponseEntity.ok(comments);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
+        try {
+            commentService.deleteComment(commentId);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+}
+
+@RestController
+@RequestMapping("/notes/{noteId}/comments")
+@RequiredArgsConstructor
+class NoteCommentController {
+
+    private final CommentService commentService;
+
+    @PostMapping
+    public ResponseEntity<?> createComment(
+            @PathVariable Long noteId,
+            @Valid @RequestBody CommentRequest request) {
+        try {
+            CommentResponse response = commentService.createNoteComment(noteId, request);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @GetMapping
+    public ResponseEntity<List<CommentResponse>> getComments(@PathVariable Long noteId) {
+        try {
+            List<CommentResponse> comments = commentService.getCommentsByNote(noteId);
             return ResponseEntity.ok(comments);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();

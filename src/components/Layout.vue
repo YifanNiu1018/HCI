@@ -9,18 +9,37 @@
         <div class="header-center">
           <el-button
             text
+            :icon="Food"
+            @click="$router.push('/dishes')"
+            class="nav-button"
+            :class="{ active: $route.path.startsWith('/dishes') || $route.path.startsWith('/category') }"
+          >
+            菜谱
+          </el-button>
+          <el-button
+            text
+            :icon="Document"
+            @click="$router.push('/notes')"
+            class="nav-button"
+            :class="{ active: $route.path.startsWith('/notes') }"
+          >
+            笔记
+          </el-button>
+          <el-button
+            text
             :icon="Compass"
             @click="$router.push('/discover')"
-            class="discover-button"
+            class="nav-button"
+            :class="{ active: $route.path === '/discover' }"
           >
             发现
           </el-button>
           <el-button
             v-if="userStore.isLoggedIn"
-            text
             :icon="Edit"
             @click="$router.push('/note/create')"
-            class="create-note-button"
+            class="publish-button"
+            type="primary"
           >
             发布笔记
           </el-button>
@@ -58,9 +77,13 @@
                   <el-icon><User /></el-icon>
                   个人中心
                 </el-dropdown-item>
-                <el-dropdown-item command="favorites">
+                <el-dropdown-item command="favorite-dishes">
                   <el-icon><Star /></el-icon>
-                  我的收藏
+                  收藏的菜谱
+                </el-dropdown-item>
+                <el-dropdown-item command="favorite-notes">
+                  <el-icon><Star /></el-icon>
+                  收藏的笔记
                 </el-dropdown-item>
                 <el-dropdown-item command="notes">
                   <el-icon><Document /></el-icon>
@@ -83,20 +106,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '../stores/user'
-import { useDishesStore } from '../stores/dishes'
 import { Food, Search, User, ArrowDown, SwitchButton, Edit, Compass, Star, Document } from '@element-plus/icons-vue'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
-const dishesStore = useDishesStore()
 const searchKeyword = ref('')
+
+// 同步路由查询参数到搜索框
+onMounted(() => {
+  if (route.query.keyword) {
+    searchKeyword.value = route.query.keyword as string
+  }
+})
+
+watch(() => route.query.keyword, (newKeyword) => {
+  searchKeyword.value = (newKeyword as string) || ''
+})
 
 const handleSearch = () => {
   if (searchKeyword.value.trim()) {
-    router.push({ name: 'Home', query: { keyword: searchKeyword.value } })
+    router.push({ path: '/', query: { keyword: searchKeyword.value.trim() } })
+  } else {
+    router.push({ path: '/' })
   }
 }
 
@@ -107,8 +142,10 @@ const goToProfile = () => {
 const handleCommand = (command: string) => {
   if (command === 'profile') {
     router.push('/profile')
-  } else if (command === 'favorites') {
-    router.push('/profile?tab=favorites')
+  } else if (command === 'favorite-dishes') {
+    router.push('/profile?tab=favorite-dishes')
+  } else if (command === 'favorite-notes') {
+    router.push('/profile?tab=favorite-notes')
   } else if (command === 'notes') {
     router.push('/profile?tab=notes')
   } else if (command === 'logout') {
@@ -126,11 +163,17 @@ const handleCommand = (command: string) => {
 
 .header {
   background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   padding: 0;
-  height: 64px !important;
-  line-height: 64px;
+  height: 70px !important;
+  line-height: 70px;
   width: 100%;
+  border-bottom: 1px solid #f0f0f0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.98);
 }
 
 .header-content {
@@ -154,16 +197,23 @@ const handleCommand = (command: string) => {
 .logo {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 20px;
-  font-weight: bold;
+  gap: 10px;
+  font-size: 22px;
+  font-weight: 700;
   color: #ff6b6b;
   cursor: pointer;
-  transition: opacity 0.3s;
+  transition: all 0.3s;
+  padding: 8px 12px;
+  border-radius: 8px;
 }
 
 .logo:hover {
-  opacity: 0.8;
+  background: rgba(255, 107, 107, 0.08);
+  transform: scale(1.02);
+}
+
+.logo .el-icon {
+  font-size: 28px;
 }
 
 .header-right {
@@ -173,7 +223,17 @@ const handleCommand = (command: string) => {
 }
 
 .search-input {
-  width: 300px;
+  width: 320px;
+}
+
+.search-input :deep(.el-input__wrapper) {
+  border-radius: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s;
+}
+
+.search-input :deep(.el-input__wrapper:hover) {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .user-info {
@@ -209,26 +269,54 @@ const handleCommand = (command: string) => {
   max-width: none;
 }
 
-.discover-button,
-.create-note-button {
+.nav-button {
   background: transparent !important;
   border: none;
-  color: #333;
+  color: #666;
   font-size: 16px;
   padding: 8px 16px;
   transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.discover-button:hover,
-.create-note-button:hover {
+.nav-button:hover {
   background: rgba(64, 158, 255, 0.1) !important;
   color: #409eff;
   transform: translateY(-2px);
 }
 
-.discover-button:active,
-.create-note-button:active {
+.nav-button.active {
+  color: #409eff;
+  font-weight: 600;
+}
+
+.nav-button:active {
   transform: translateY(0);
+}
+
+.publish-button {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff8c42 100%) !important;
+  border: none !important;
+  color: #fff !important;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 8px 20px;
+  border-radius: 20px;
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+}
+
+.publish-button:hover {
+  background: linear-gradient(135deg, #ff5252 0%, #ff7a2e 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+}
+
+.publish-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
 }
 </style>
 

@@ -1,15 +1,16 @@
 <template>
   <div v-loading="dishesStore.loading" class="detail-container">
-    <el-button
-      class="back-button"
-      @click="$router.back()"
-      :icon="ArrowLeft"
-    >
-      返回
-    </el-button>
+    <div class="detail-wrapper">
+      <el-button
+        class="back-button"
+        @click="$router.back()"
+        :icon="ArrowLeft"
+      >
+        返回
+      </el-button>
 
-    <div v-if="dishesStore.currentDish" class="detail-content">
-      <div class="detail-header">
+      <div v-if="dishesStore.currentDish" class="detail-content">
+        <div class="detail-header">
         <div class="detail-image-wrapper">
           <img
             :src="getImageUrl(dishesStore.currentDish.image)"
@@ -51,104 +52,146 @@
         </div>
       </div>
 
-      <div class="detail-sections">
-        <el-card class="section-card">
-          <template #header>
-            <h3>
+        <div class="detail-main">
+          <div class="detail-main-content">
+          <!-- 所需食材 -->
+          <div class="content-section">
+            <h2 class="section-title">
               <el-icon><ShoppingBag /></el-icon>
               所需食材
-            </h3>
-          </template>
-          <ul class="ingredients-list">
-            <li v-for="(ingredient, index) in dishesStore.currentDish.ingredients" :key="index">
-              <el-icon><Check /></el-icon>
-              {{ ingredient }}
-            </li>
-          </ul>
-        </el-card>
+            </h2>
+            <ul class="ingredients-list">
+              <li v-for="(ingredient, index) in dishesStore.currentDish.ingredients" :key="index">
+                <el-icon><Check /></el-icon>
+                <span>{{ ingredient }}</span>
+              </li>
+            </ul>
+          </div>
 
-        <el-card class="section-card">
-          <template #header>
-            <h3>
+          <!-- 制作步骤 -->
+          <div class="content-section">
+            <h2 class="section-title">
               <el-icon><Document /></el-icon>
               制作步骤
-            </h3>
-          </template>
-          <ol class="steps-list">
-            <li v-for="(step, index) in dishesStore.currentDish.steps" :key="index">
-              <div class="step-number">{{ index + 1 }}</div>
-              <div class="step-content">{{ step }}</div>
-            </li>
-          </ol>
-        </el-card>
-      </div>
-
-      <!-- 评论区域 -->
-      <el-card class="section-card comments-section">
-        <template #header>
-          <h3>
-            <el-icon><ChatLineRound /></el-icon>
-            评论 ({{ commentsStore.comments.length }})
-          </h3>
-        </template>
-
-        <!-- 评论表单 -->
-        <div v-if="userStore.isLoggedIn" class="comment-form">
-          <el-input
-            v-model="newComment"
-            type="textarea"
-            :rows="3"
-            placeholder="写下你的评论..."
-            maxlength="2000"
-            show-word-limit
-          />
-          <div class="comment-form-actions">
-            <el-button
-              type="primary"
-              @click="handleSubmitComment"
-              :loading="commentLoading"
-            >
-              发表评论
-            </el-button>
+            </h2>
+            <ol class="steps-list">
+              <li v-for="(step, index) in dishesStore.currentDish.steps" :key="index">
+                <div class="step-number">{{ index + 1 }}</div>
+                <div class="step-content">{{ step }}</div>
+              </li>
+            </ol>
           </div>
-        </div>
-        <div v-else class="comment-login-tip">
-          <el-button type="primary" @click="$router.push('/login')">
-            登录后发表评论
-          </el-button>
-        </div>
 
-        <!-- 评论列表 -->
-        <div v-loading="commentsStore.loading" class="comments-list">
-          <div v-if="commentsStore.comments.length === 0" class="no-comments">
-            <el-empty description="暂无评论，快来发表第一条评论吧！" :image-size="100" />
-          </div>
-          <div v-else>
-            <div
-              v-for="comment in commentsStore.comments"
-              :key="comment.id"
-              class="comment-item"
-            >
-              <CommentItem
-                :comment="comment"
-                :dish-id="dishesStore.currentDish?.id || 0"
-                @reply="handleReply"
-                @delete="handleDeleteComment"
+          <!-- 评论区域 -->
+          <div class="content-section comments-section">
+            <h2 class="section-title">
+              <el-icon><ChatLineRound /></el-icon>
+              评论 ({{ commentsStore.comments.length }})
+            </h2>
+
+            <!-- 评论表单 -->
+            <div v-if="userStore.isLoggedIn" class="comment-form">
+              <el-input
+                v-model="newComment"
+                type="textarea"
+                :rows="3"
+                placeholder="写下你的评论..."
+                maxlength="2000"
+                show-word-limit
               />
+              <div class="comment-form-actions">
+                <el-button
+                  type="primary"
+                  @click="handleSubmitComment"
+                  :loading="commentLoading"
+                >
+                  发表评论
+                </el-button>
+              </div>
+            </div>
+            <div v-else class="comment-login-tip">
+              <el-button type="primary" @click="$router.push('/login')">
+                登录后发表评论
+              </el-button>
+            </div>
+
+            <!-- 评论列表 -->
+            <div v-loading="commentsStore.loading" class="comments-list">
+              <div v-if="commentsStore.comments.length === 0" class="no-comments">
+                <el-empty description="暂无评论，快来发表第一条评论吧！" :image-size="100" />
+              </div>
+              <div v-else>
+                <div
+                  v-for="comment in commentsStore.comments"
+                  :key="comment.id"
+                  class="comment-item"
+                >
+                  <CommentItem
+                    :comment="comment"
+                    :dish-id="dishesStore.currentDish?.id || 0"
+                    @reply="handleReply"
+                    @delete="handleDeleteComment"
+                  />
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </el-card>
-    </div>
+          </div>
 
-    <el-empty v-else-if="!dishesStore.loading" description="菜品不存在" />
+          <!-- 推荐菜品 - 右侧边栏 -->
+          <div v-if="recommendedDishes.length > 0" class="recommendations-sidebar">
+          <div class="sidebar-card">
+            <h3 class="sidebar-title">
+              <el-icon><Star /></el-icon>
+              相关推荐
+            </h3>
+            <div class="recommended-dishes-list">
+              <div
+                v-for="dish in recommendedDishes"
+                :key="dish.id"
+                class="recommended-dish-item"
+                @click="goToDish(dish.id)"
+              >
+                <img
+                  :src="getImageUrl(dish.image)"
+                  :alt="dish.name"
+                  class="recommended-dish-image"
+                />
+                <div class="recommended-dish-info">
+                  <h4 class="recommended-dish-name">{{ dish.name }}</h4>
+                  <p class="recommended-dish-meta">
+                    <span>{{ dish.cookingTime }}分钟</span>
+                  </p>
+                  <div v-if="dish.tags && dish.tags.length > 0" class="recommended-dish-tags">
+                    <el-tag
+                      v-for="tag in dish.tags.slice(0, 2)"
+                      :key="tag"
+                      size="small"
+                    >
+                      {{ tag }}
+                    </el-tag>
+                  </div>
+                  <div v-else-if="dish.category" class="recommended-dish-tags">
+                    <el-tag size="small">
+                      {{ dish.category }}
+                    </el-tag>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+        </div>
+      </div>
+      <el-empty v-else description="菜品不存在" />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useDishesStore } from '@/stores/dishes'
+import { useDishesStore, type Dish } from '@/stores/dishes'
 import { useUserStore } from '@/stores/user'
 import { useCommentsStore } from '@/stores/comments'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -177,14 +220,63 @@ const commentLoading = ref(false)
 const newComment = ref('')
 const replyingTo = ref<number | null>(null)
 const replyContent = ref('')
+const allDishes = ref<Dish[]>([])
 
-onMounted(async () => {
-  const dishId = parseInt(route.params.id as string)
+// 推荐菜品：同分类的其他菜品，最多显示4个
+const recommendedDishes = computed(() => {
+  if (!dishesStore.currentDish || allDishes.value.length === 0) {
+    return []
+  }
+  
+  const currentCategory = dishesStore.currentDish.category
+  const currentId = dishesStore.currentDish.id
+  
+  // 筛选同分类的菜品，排除当前菜品
+  const sameCategoryDishes = allDishes.value.filter(
+    dish => dish.category === currentCategory && dish.id !== currentId
+  )
+  
+  // 如果同分类的菜品不足4个，补充其他分类的菜品
+  if (sameCategoryDishes.length < 4) {
+    const otherDishes = allDishes.value.filter(
+      dish => dish.category !== currentCategory && dish.id !== currentId
+    )
+    const remaining = 4 - sameCategoryDishes.length
+    return [...sameCategoryDishes, ...otherDishes.slice(0, remaining)]
+  }
+  
+  return sameCategoryDishes.slice(0, 4)
+})
+
+const loadDishData = async (dishId: number) => {
   if (dishId) {
     await dishesStore.fetchDishById(dishId)
     await commentsStore.fetchComments(dishId)
+    // 获取所有菜品用于推荐
+    await dishesStore.fetchDishes()
+    allDishes.value = dishesStore.dishes
   }
+}
+
+onMounted(async () => {
+  const dishId = parseInt(route.params.id as string)
+  await loadDishData(dishId)
 })
+
+// 监听路由参数变化，当跳转到不同菜品时重新加载数据
+watch(
+  () => route.params.id,
+  async (newId) => {
+    const dishId = parseInt(newId as string)
+    await loadDishData(dishId)
+    // 滚动到顶部
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+)
+
+const goToDish = (dishId: number) => {
+  router.push(`/dish/${dishId}`)
+}
 
 const handleToggleFavorite = async () => {
   if (!userStore.isLoggedIn) {
@@ -297,32 +389,34 @@ const getDifficultyType = (difficulty: string) => {
 .detail-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 20px 40px;
   width: 100%;
 }
 
 .back-button {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .detail-content {
   background: #fff;
-  border-radius: 12px;
-  padding: 32px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  padding: 24px;
 }
 
 .detail-header {
   display: grid;
   grid-template-columns: 400px 1fr;
-  gap: 32px;
+  gap: 24px;
   margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #eee;
 }
 
 .detail-image-wrapper {
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
   background: #f5f5f5;
+  aspect-ratio: 16 / 9;
+  width: 100%;
 }
 
 .detail-image {
@@ -337,77 +431,85 @@ const getDifficultyType = (difficulty: string) => {
 }
 
 .detail-title {
-  font-size: 32px;
+  font-size: 28px;
+  font-weight: 600;
   color: #333;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  line-height: 1.3;
 }
 
 .detail-description {
-  font-size: 16px;
+  font-size: 14px;
   color: #666;
   line-height: 1.6;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   flex: 1;
 }
 
 .detail-meta {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .detail-actions {
   margin-top: auto;
 }
 
-.detail-sections {
+.detail-main {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 24px;
+  align-items: start;
+}
+
+.detail-main-content {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 32px;
 }
 
-.section-card {
-  border-radius: 12px;
+.content-section {
+  background: #fff;
 }
 
-.section-card :deep(.el-card__header) {
-  background: #f8f9fa;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.section-card h3 {
+.section-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 20px;
+  font-size: 18px;
+  font-weight: 600;
   color: #333;
-  margin: 0;
+  margin: 0 0 16px 0;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #409eff;
 }
 
 .ingredients-list {
   list-style: none;
   padding: 0;
   margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
 }
 
 .ingredients-list li {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 16px;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
   color: #333;
-}
-
-.ingredients-list li:last-child {
-  border-bottom: none;
+  background: #f8f9fa;
+  border-radius: 4px;
 }
 
 .ingredients-list li .el-icon {
   color: #67c23a;
-  font-size: 18px;
+  font-size: 16px;
+  flex-shrink: 0;
 }
 
 .steps-list {
@@ -421,7 +523,7 @@ const getDifficultyType = (difficulty: string) => {
   display: flex;
   gap: 16px;
   padding: 20px 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #eee;
   counter-increment: step-counter;
 }
 
@@ -431,24 +533,24 @@ const getDifficultyType = (difficulty: string) => {
 
 .step-number {
   flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  width: 28px;
+  height: 28px;
+  background: #409eff;
   color: #fff;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  font-size: 16px;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 .step-content {
   flex: 1;
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 15px;
+  line-height: 1.7;
   color: #333;
-  padding-top: 4px;
+  padding-top: 2px;
 }
 
 @media (max-width: 768px) {
@@ -461,13 +563,112 @@ const getDifficultyType = (difficulty: string) => {
   }
 }
 
+.recommendations-sidebar {
+  position: sticky;
+  top: 20px;
+  height: fit-content;
+}
+
+.sidebar-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #eee;
+}
+
+.sidebar-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 16px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.recommended-dishes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recommended-dish-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  border: 1px solid #f0f0f0;
+}
+
+.recommended-dish-item:hover {
+  background: #f8f9fa;
+  border-color: #409eff;
+}
+
+.recommended-dish-image {
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+  aspect-ratio: 4 / 3;
+}
+
+.recommended-dish-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.recommended-dish-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 6px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recommended-dish-meta {
+  font-size: 12px;
+  color: #999;
+  margin: 0 0 4px 0;
+}
+
+.recommended-dish-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
 .comments-section {
-  margin-top: 24px;
+  margin-top: 20px;
+}
+
+@media (max-width: 1024px) {
+  .detail-main {
+    grid-template-columns: 1fr;
+  }
+
+  .recommendations-sidebar {
+    position: static;
+    margin-top: 24px;
+  }
+
+  .recommended-dishes-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
 }
 
 .comment-form {
-  margin-bottom: 32px;
-  padding-bottom: 24px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
   border-bottom: 1px solid #eee;
 }
 

@@ -17,7 +17,9 @@ public interface NoteRepository extends JpaRepository<Note, Long> {
     
     @Query("SELECT n FROM Note n WHERE n.isPublic = true AND " +
            "(LOWER(n.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "EXISTS (SELECT i FROM n.ingredients i WHERE LOWER(i) LIKE LOWER(CONCAT('%', :keyword, '%'))))")
+           "LOWER(n.description) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "EXISTS (SELECT i FROM n.ingredients i WHERE LOWER(i) LIKE LOWER(CONCAT('%', :keyword, '%'))) OR " +
+           "EXISTS (SELECT t FROM n.tags t WHERE LOWER(t) LIKE LOWER(CONCAT('%', :keyword, '%'))))")
     List<Note> searchPublicNotes(@Param("keyword") String keyword);
     
     @Query("SELECT n FROM Note n WHERE n.user = :user AND " +

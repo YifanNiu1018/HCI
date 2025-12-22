@@ -145,17 +145,28 @@ const handleRegister = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 50%, #ff6b6b 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 10s ease infinite;
   padding: 20px;
+  position: relative;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 .register-box {
   width: 100%;
-  max-width: 400px;
+  max-width: 440px;
   background: #fff;
-  border-radius: 12px;
-  padding: 40px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  padding: 48px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 1;
 }
 
 .register-header {
@@ -164,15 +175,18 @@ const handleRegister = async () => {
 }
 
 .logo-icon {
-  font-size: 48px;
+  font-size: 56px;
   color: #ff6b6b;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 2px 4px rgba(255, 107, 107, 0.3));
 }
 
 .register-header h2 {
-  font-size: 24px;
-  color: #333;
-  margin-bottom: 8px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 10px;
+  letter-spacing: -0.5px;
 }
 
 .register-header p {

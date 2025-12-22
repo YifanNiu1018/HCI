@@ -50,6 +50,30 @@ const routes: RouteRecordRaw[] = [
     name: 'Discover',
     component: () => import('@/views/Discover.vue'),
     meta: { requiresAuth: false }
+  },
+  {
+    path: '/categories',
+    name: 'Categories',
+    component: () => import('@/views/Categories.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/category/:category',
+    name: 'CategoryDetail',
+    component: () => import('@/views/CategoryDetail.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/dishes',
+    name: 'Dishes',
+    component: () => import('@/views/Dishes.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/notes',
+    name: 'Notes',
+    component: () => import('@/views/Notes.vue'),
+    meta: { requiresAuth: false }
   }
 ]
 

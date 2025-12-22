@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.HashSet;
 import java.util.Set;
+import com.cooking.entity.Note;
 
 @Entity
 @Table(name = "users")
@@ -36,5 +37,13 @@ public class User {
         inverseJoinColumns = @JoinColumn(name = "dish_id")
     )
     private Set<Dish> favoriteDishes = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "user_favorite_notes",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "note_id")
+    )
+    private Set<Note> favoriteNotes = new HashSet<>();
 }
 

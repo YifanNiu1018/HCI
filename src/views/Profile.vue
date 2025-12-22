@@ -28,11 +28,19 @@
       <!-- Tab切换栏 -->
       <div class="profile-tabs">
         <el-tabs v-model="activeTab" @tab-change="handleTabChange">
-          <el-tab-pane label="我的收藏" name="favorites">
+          <el-tab-pane label="收藏的菜谱" name="favorite-dishes">
             <template #label>
               <span class="tab-label">
                 <el-icon><Star /></el-icon>
-                我的收藏
+                收藏的菜谱
+              </span>
+            </template>
+          </el-tab-pane>
+          <el-tab-pane label="收藏的笔记" name="favorite-notes">
+            <template #label>
+              <span class="tab-label">
+                <el-icon><Star /></el-icon>
+                收藏的笔记
               </span>
             </template>
           </el-tab-pane>
@@ -48,13 +56,31 @@
       </div>
     </el-card>
 
-    <!-- 我的收藏 -->
-    <el-card v-if="activeTab === 'favorites'" class="content-card">
+    <!-- 收藏的菜谱 -->
+    <el-card v-if="activeTab === 'favorite-dishes'" class="content-card">
+      <template #header>
+        <div class="search-header">
+          <h3>
+            <el-icon><Star /></el-icon>
+            收藏的菜谱
+            <span v-if="filteredFavorites.length !== favorites.length" class="count-badge">
+              ({{ filteredFavorites.length }}/{{ favorites.length }})
+            </span>
+          </h3>
+          <el-input
+            v-model="favoriteDishSearchKeyword"
+            placeholder="搜索收藏的菜谱..."
+            class="search-input"
+            clearable
+            :prefix-icon="Search"
+          />
+        </div>
+      </template>
       <div v-loading="loading" class="content-area">
-        <div v-if="favorites.length > 0" class="items-grid">
+        <div v-if="filteredFavorites.length > 0" class="items-grid">
           <el-card
-            v-for="dish in favorites"
-            :key="dish.id"
+            v-for="dish in filteredFavorites"
+            :key="'dish-' + dish.id"
             class="item-card"
             shadow="hover"
             @click="goToDetail(dish.id)"
@@ -86,7 +112,64 @@
             </div>
           </el-card>
         </div>
-        <el-empty v-else description="暂无收藏的菜品" />
+        <el-empty v-else-if="favorites.length === 0" description="暂无收藏的菜谱" />
+        <el-empty v-else description="没有找到匹配的菜谱" />
+      </div>
+    </el-card>
+
+    <!-- 收藏的笔记 -->
+    <el-card v-if="activeTab === 'favorite-notes'" class="content-card">
+      <template #header>
+        <div class="search-header">
+          <h3>
+            <el-icon><Star /></el-icon>
+            收藏的笔记
+            <span v-if="filteredFavoriteNotes.length !== favoriteNotes.length" class="count-badge">
+              ({{ filteredFavoriteNotes.length }}/{{ favoriteNotes.length }})
+            </span>
+          </h3>
+          <el-input
+            v-model="favoriteNoteSearchKeyword"
+            placeholder="搜索收藏的笔记..."
+            class="search-input"
+            clearable
+            :prefix-icon="Search"
+          />
+        </div>
+      </template>
+      <div v-loading="favoriteNotesLoading" class="content-area">
+        <div v-if="filteredFavoriteNotes.length > 0" class="items-grid">
+          <el-card
+            v-for="note in filteredFavoriteNotes"
+            :key="'note-' + note.id"
+            class="item-card note-card"
+            shadow="hover"
+            @click="goToNoteDetail(note.id)"
+          >
+            <div class="item-image-wrapper">
+              <img :src="getImageUrl(note.image)" :alt="note.name" class="item-image" />
+              <div class="item-overlay">
+                <el-button
+                  type="danger"
+                  :icon="StarFilled"
+                  circle
+                  size="small"
+                  @click.stop="handleRemoveFavoriteNote(note.id)"
+                />
+              </div>
+            </div>
+            <div class="item-info">
+              <h4 class="item-name">{{ note.name }}</h4>
+              <p class="item-description">{{ note.description }}</p>
+              <div class="item-meta">
+                <span class="note-date">{{ formatDate(note.createdAt) }}</span>
+                <span class="note-author-name">by {{ note.author.username }}</span>
+              </div>
+            </div>
+          </el-card>
+        </div>
+        <el-empty v-else-if="favoriteNotes.length === 0" description="暂无收藏的笔记" />
+        <el-empty v-else description="没有找到匹配的笔记" />
       </div>
     </el-card>
 
@@ -160,16 +243,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useDishesStore } from '@/stores/dishes'
 import { useNotesStore } from '@/stores/notes'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Star, StarFilled, Clock, Document, Edit, Delete, ArrowLeft } from '@element-plus/icons-vue'
+import { Star, StarFilled, Clock, Document, Edit, Delete, ArrowLeft, Search } from '@element-plus/icons-vue'
 import type { Dish } from '@/stores/dishes'
 import type { Note } from '@/stores/notes'
 import { getImageUrl } from '@/utils/image'
+import api from '@/api'
 
 const route = useRoute()
 const router = useRouter()
@@ -177,25 +261,30 @@ const userStore = useUserStore()
 const dishesStore = useDishesStore()
 const notesStore = useNotesStore()
 const favorites = ref<Dish[]>([])
+const favoriteNotes = ref<Note[]>([])
 const notes = ref<Note[]>([])
 const loading = ref(false)
+const favoriteNotesLoading = ref(false)
 const notesLoading = ref(false)
-const activeTab = ref<string>('favorites')
+const activeTab = ref<string>('favorite-dishes')
+const favoriteDishSearchKeyword = ref('')
+const favoriteNoteSearchKeyword = ref('')
 
 onMounted(async () => {
   // 根据路由参数设置初始tab
   const tab = route.query.tab as string
-  if (tab === 'notes' || tab === 'favorites') {
+  if (tab === 'notes' || tab === 'favorite-dishes' || tab === 'favorite-notes') {
     activeTab.value = tab
   }
   
   await loadFavorites()
+  await loadFavoriteNotes()
   await loadNotes()
 })
 
 // 监听路由变化
 watch(() => route.query.tab, (newTab) => {
-  if (newTab === 'notes' || newTab === 'favorites') {
+  if (newTab === 'notes' || newTab === 'favorite-dishes' || newTab === 'favorite-notes') {
     activeTab.value = newTab as string
   }
 })
@@ -221,6 +310,18 @@ const goToDetail = (id: number) => {
   router.push(`/dish/${id}`)
 }
 
+const loadFavoriteNotes = async () => {
+  favoriteNotesLoading.value = true
+  try {
+    const response = await api.get('/user/favorite-notes')
+    favoriteNotes.value = response.data
+  } catch (error) {
+    ElMessage.error('加载收藏笔记失败')
+  } finally {
+    favoriteNotesLoading.value = false
+  }
+}
+
 const handleRemoveFavorite = async (dishId: number) => {
   try {
     await ElMessageBox.confirm('确定要取消收藏吗？', '提示', {
@@ -231,6 +332,24 @@ const handleRemoveFavorite = async (dishId: number) => {
 
     await dishesStore.toggleFavorite(dishId)
     favorites.value = favorites.value.filter(dish => dish.id !== dishId)
+    ElMessage.success('取消收藏成功')
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      ElMessage.error('操作失败')
+    }
+  }
+}
+
+const handleRemoveFavoriteNote = async (noteId: number) => {
+  try {
+    await ElMessageBox.confirm('确定要取消收藏吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+
+    await notesStore.toggleFavorite(noteId)
+    favoriteNotes.value = favoriteNotes.value.filter(note => note.id !== noteId)
     ElMessage.success('取消收藏成功')
   } catch (error: any) {
     if (error !== 'cancel') {
@@ -322,6 +441,39 @@ const getDifficultyType = (difficulty: string) => {
   }
   return map[difficulty] || 'info'
 }
+
+// 过滤收藏的菜谱
+const filteredFavorites = computed(() => {
+  if (!favoriteDishSearchKeyword.value.trim()) {
+    return favorites.value
+  }
+  const keyword = favoriteDishSearchKeyword.value.toLowerCase().trim()
+  return favorites.value.filter(dish => {
+    return (
+      dish.name.toLowerCase().includes(keyword) ||
+      dish.description?.toLowerCase().includes(keyword) ||
+      dish.category?.toLowerCase().includes(keyword) ||
+      dish.tags?.some(tag => tag.toLowerCase().includes(keyword)) ||
+      dish.ingredients?.some(ing => ing.toLowerCase().includes(keyword))
+    )
+  })
+})
+
+// 过滤收藏的笔记
+const filteredFavoriteNotes = computed(() => {
+  if (!favoriteNoteSearchKeyword.value.trim()) {
+    return favoriteNotes.value
+  }
+  const keyword = favoriteNoteSearchKeyword.value.toLowerCase().trim()
+  return favoriteNotes.value.filter(note => {
+    return (
+      note.name.toLowerCase().includes(keyword) ||
+      note.description?.toLowerCase().includes(keyword) ||
+      note.tags?.some(tag => tag.toLowerCase().includes(keyword)) ||
+      note.author.username.toLowerCase().includes(keyword)
+    )
+  })
+})
 </script>
 
 <style scoped>
@@ -329,7 +481,7 @@ const getDifficultyType = (difficulty: string) => {
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
-  padding: 0 24px;
+  padding: 32px 24px;
 }
 
 .back-button {
@@ -337,8 +489,16 @@ const getDifficultyType = (difficulty: string) => {
 }
 
 .profile-card {
-  margin-bottom: 24px;
-  border-radius: 12px;
+  margin-bottom: 32px;
+  border-radius: 20px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+.profile-card :deep(.el-card__header) {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border-bottom: 1px solid #e9ecef;
+  padding: 24px 32px;
 }
 
 .profile-header {
@@ -352,8 +512,10 @@ const getDifficultyType = (difficulty: string) => {
   align-items: center;
   gap: 8px;
   margin: 0;
-  font-size: 20px;
-  color: #333;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: -0.3px;
 }
 
 .profile-tabs {
@@ -377,7 +539,15 @@ const getDifficultyType = (difficulty: string) => {
 }
 
 .content-card {
-  border-radius: 12px;
+  border-radius: 20px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+.content-card :deep(.el-card__header) {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border-bottom: 1px solid #e9ecef;
+  padding: 20px 24px;
 }
 
 .content-area {
@@ -392,14 +562,17 @@ const getDifficultyType = (difficulty: string) => {
 
 .item-card {
   cursor: pointer;
-  transition: transform 0.3s, box-shadow 0.3s;
-  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 16px;
   overflow: hidden;
+  border: 1px solid #f0f0f0;
+  background: #fff;
 }
 
 .item-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-8px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+  border-color: #e0e0e0;
 }
 
 .item-card.note-card {
@@ -481,6 +654,11 @@ const getDifficultyType = (difficulty: string) => {
   color: #999;
 }
 
+.note-author-name {
+  font-size: 12px;
+  color: #999;
+}
+
 .note-tags {
   display: flex;
   flex-wrap: wrap;
@@ -523,5 +701,53 @@ const getDifficultyType = (difficulty: string) => {
   font-size: 20px;
   color: #333;
 }
+
+.search-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.search-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 20px;
+  color: #333;
+}
+
+.count-badge {
+  font-size: 14px;
+  font-weight: normal;
+  color: #666;
+}
+
+.search-input {
+  width: 300px;
+}
+
+.search-input :deep(.el-input__wrapper) {
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s;
+}
+
+.search-input :deep(.el-input__wrapper:hover) {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+@media (max-width: 768px) {
+  .search-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-input {
+    width: 100%;
+  }
+}
+
 </style>
 

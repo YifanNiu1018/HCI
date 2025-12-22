@@ -9,7 +9,8 @@
         ref="noteFormRef"
         :model="noteForm"
         :rules="rules"
-        label-width="100px"
+        label-width="120px"
+        class="note-form"
       >
         <el-form-item label="菜名" prop="name">
           <el-input
@@ -307,15 +308,40 @@ const handleSubmit = async () => {
 
 <style scoped>
 .create-note-container {
-  max-width: 900px;
+  max-width: 1000px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 32px 24px;
+  min-height: calc(100vh - 200px);
+}
+
+.create-note-container :deep(.el-card) {
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: none;
+  transition: none;
+}
+
+.create-note-container :deep(.el-card:hover) {
+  box-shadow: none;
+  transform: none;
+}
+
+.create-note-container :deep(.el-card__body) {
+  padding: 32px 40px;
+}
+
+.create-note-container :deep(.el-card__header) {
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 24px 40px;
 }
 
 .create-note-container h2 {
   margin: 0;
   font-size: 24px;
-  color: #333;
+  font-weight: 600;
+  color: #1f2937;
+  letter-spacing: -0.3px;
 }
 
 .image-upload {
@@ -405,8 +431,100 @@ const handleSubmit = async () => {
 }
 
 .quick-tag:hover {
-  background: #409eff;
+  background: #ff6b6b;
   color: #fff;
+  border-color: #ff6b6b;
+}
+
+.note-form :deep(.el-form-item) {
+  margin-bottom: 28px;
+}
+
+.note-form :deep(.el-form-item__label) {
+  font-weight: 500;
+  color: #333;
+  padding-right: 20px;
+}
+
+.note-form :deep(.el-input__wrapper) {
+  border-radius: 8px;
+}
+
+.note-form :deep(.el-textarea__inner) {
+  border-radius: 8px;
+}
+
+.note-form :deep(.el-radio-group) {
+  display: flex;
+  gap: 24px;
+}
+
+/* 主要按钮样式 */
+.note-form :deep(.el-button--primary) {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff8c42 100%);
+  border: none;
+  color: #fff;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.note-form :deep(.el-button--primary:hover) {
+  background: linear-gradient(135deg, #ff5252 0%, #ff7a2e 100%);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.note-form :deep(.el-button--primary:active) {
+  background: linear-gradient(135deg, #ff4757 0%, #ff6b35 100%);
+}
+
+.note-form :deep(.el-button--primary.is-disabled) {
+  background: #ccc;
+  color: #fff;
+}
+
+/* 取消按钮样式 */
+.note-form :deep(.el-button:not(.el-button--primary):not(.el-button--danger)) {
+  border-color: #d1d5db;
+  color: #6b7280;
+}
+
+.note-form :deep(.el-button:not(.el-button--primary):not(.el-button--danger):hover) {
+  border-color: #9ca3af;
+  color: #4b5563;
+  background: #f9fafb;
+}
+
+/* 文本按钮样式 */
+.note-form :deep(.el-button--text.el-button--primary) {
+  color: #ff6b6b;
+  padding: 8px 12px;
+}
+
+.note-form :deep(.el-button--text.el-button--primary:hover) {
+  color: #ff5252;
+  background: rgba(255, 107, 107, 0.1);
+}
+
+@media (max-width: 768px) {
+  .create-note-container {
+    padding: 20px 16px;
+  }
+
+  .create-note-container :deep(.el-card__body) {
+    padding: 24px 20px;
+  }
+
+  .create-note-container :deep(.el-card__header) {
+    padding: 20px;
+  }
+
+  .create-note-container h2 {
+    font-size: 20px;
+  }
+
+  .note-form :deep(.el-form-item) {
+    margin-bottom: 24px;
+  }
 }
 </style>
 

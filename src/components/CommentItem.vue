@@ -97,7 +97,8 @@ import type { Comment } from '@/stores/comments'
 
 const props = defineProps<{
   comment: Comment
-  dishId: number
+  dishId?: number
+  noteId?: number
 }>()
 
 const emit = defineEmits<{
@@ -183,12 +184,23 @@ const handleDeleteReply = async (replyId: number) => {
       type: 'warning'
     })
     
-    const result = await commentsStore.deleteComment(props.dishId, replyId)
-    if (result.success) {
-      await commentsStore.fetchComments(props.dishId)
+    let result
+    if (props.dishId) {
+      result = await commentsStore.deleteComment(props.dishId, replyId)
+      if (result.success) {
+        await commentsStore.fetchComments(props.dishId)
+      }
+    } else if (props.noteId) {
+      result = await commentsStore.deleteNoteComment(props.noteId, replyId)
+      if (result.success) {
+        await commentsStore.fetchNoteComments(props.noteId)
+      }
+    }
+    
+    if (result && result.success) {
       ElMessage.success('删除成功')
     } else {
-      ElMessage.error(result.message || '删除失败')
+      ElMessage.error(result?.message || '删除失败')
     }
   } catch (error: any) {
     if (error !== 'cancel') {
