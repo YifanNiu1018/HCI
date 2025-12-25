@@ -49,6 +49,14 @@
               {{ dishesStore.currentDish.isFavorite ? '已收藏' : '收藏' }}
             </el-button>
             <el-button
+              type="success"
+              size="large"
+              :icon="ShoppingCart"
+              @click="goToShopByDish"
+            >
+              生成购物清单
+            </el-button>
+            <el-button
               type="primary"
               size="large"
               :icon="Share"
@@ -268,6 +276,7 @@
         </div>
       </template>
     </el-dialog>
+
   </div>
 </template>
 
@@ -288,6 +297,7 @@ import {
   Star,
   StarFilled,
   ShoppingBag,
+  ShoppingCart,
   Check,
   Document,
   ChatLineRound,
@@ -506,6 +516,17 @@ const saveShareCardAsImage = async () => {
     console.error('保存图片失败:', error)
     ElMessage.error('保存图片失败')
   }
+}
+
+// 跳转到根据菜品买菜页面
+const goToShopByDish = () => {
+  if (!dishesStore.currentDish) return
+  router.push({
+    path: '/discover/shop-by-dish',
+    query: {
+      dish: dishesStore.currentDish.name
+    }
+  })
 }
 </script>
 
@@ -1039,5 +1060,6 @@ const saveShareCardAsImage = async () => {
   font-size: 12px;
   color: #999;
 }
+
 </style>
 
