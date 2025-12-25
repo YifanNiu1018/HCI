@@ -22,6 +22,11 @@ public class DishResponse {
     private Integer cookingTime;
     private Integer servings;
     private Boolean isFavorite;
+    private Integer calories;
+    private Double protein;
+    private Double fat;
+    private Double carbohydrates;
+    private Double fiber;
 
     public static DishResponse from(Dish dish, Boolean isFavorite) {
         return new DishResponse(
@@ -35,7 +40,12 @@ public class DishResponse {
             dish.getDifficulty(),
             dish.getCookingTime(),
             dish.getServings(),
-            isFavorite
+            isFavorite,
+            dish.getCalories(),
+            dish.getProtein(),
+            dish.getFat(),
+            dish.getCarbohydrates(),
+            dish.getFiber()
         );
     }
 }

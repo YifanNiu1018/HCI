@@ -6,6 +6,8 @@ import com.cooking.entity.Note;
 import com.cooking.entity.User;
 import com.cooking.repository.NoteRepository;
 import com.cooking.repository.UserRepository;
+import com.cooking.repository.CommentRepository;
+import com.cooking.repository.HistoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,8 @@ public class NoteService {
 
     private final NoteRepository noteRepository;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final HistoryRepository historyRepository;
     private final com.cooking.service.HistoryService historyService;
 
     @Transactional
@@ -84,8 +88,9 @@ public class NoteService {
                 .orElseThrow(() -> new RuntimeException("用户不存在"));
 
         Note note = new Note();
-        note.setName(request.getName() != null && !request.getName().trim().isEmpty() 
-                ? request.getName() : "未命名草稿");
+        note.setName(request.getName() != null && !request.getName().trim().isEmpty()
+                ? request.getName()
+                : "未命名草稿");
         note.setDescription(request.getDescription());
         note.setImage(request.getImage() != null ? request.getImage() : "/images/default.jpg");
         note.setIngredients(request.getIngredients() != null ? request.getIngredients() : List.of());
@@ -180,7 +185,7 @@ public class NoteService {
         // 检查权限：公开笔记或自己的笔记（草稿只能自己访问）
         String username = getCurrentUsername();
         boolean isDraft = note.getIsDraft() != null && note.getIsDraft();
-        
+
         if (isDraft) {
             // 草稿只能自己访问
             if (username == null) {
@@ -204,12 +209,12 @@ public class NoteService {
         }
 
         boolean isFavorite = username != null && isFavorite(note.getId(), username);
-        
+
         // 记录浏览历史（只记录非草稿的笔记）
         if (username != null && !isDraft) {
             historyService.recordNoteView(note.getId());
         }
-        
+
         return NoteResponse.from(note, isFavorite);
     }
 
@@ -244,6 +249,26 @@ public class NoteService {
             throw new RuntimeException("无权删除此笔记");
         }
 
+        // 先删除相关的评论（包括回复）
+        List<com.cooking.entity.Comment> comments = commentRepository.findByNote(note);
+        for (com.cooking.entity.Comment comment : comments) {
+            // 删除回复
+            commentRepository.deleteByParent(comment);
+        }
+        // 删除所有评论
+        commentRepository.deleteByNote(note);
+
+        // 删除相关的历史记录
+        historyRepository.deleteByNoteId(noteId);
+
+        // 从所有收藏了该笔记的用户中移除
+        List<User> usersWithFavorite = userRepository.findUsersByFavoriteNoteId(noteId);
+        for (User u : usersWithFavorite) {
+            u.getFavoriteNotes().removeIf(n -> n.getId().equals(noteId));
+            userRepository.save(u);
+        }
+
+        // 最后删除笔记本身
         noteRepository.delete(note);
     }
 

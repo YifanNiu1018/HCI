@@ -44,5 +44,12 @@ public class Dish {
     private Integer cookingTime;
 
     private Integer servings;
+
+    // 营养信息（每100g）
+    private Integer calories; // 卡路里（大卡）
+    private Double protein; // 蛋白质（克）
+    private Double fat; // 脂肪（克）
+    private Double carbohydrates; // 碳水化合物（克）
+    private Double fiber; // 膳食纤维（克）
 }
 

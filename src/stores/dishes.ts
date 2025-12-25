@@ -15,6 +15,11 @@ export interface Dish {
   servings: number
   isFavorite?: boolean
   tags?: string[]
+  calories?: number
+  protein?: number
+  fat?: number
+  carbohydrates?: number
+  fiber?: number
 }
 
 export const useDishesStore = defineStore('dishes', () => {

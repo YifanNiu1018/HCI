@@ -48,6 +48,14 @@
             >
               {{ dishesStore.currentDish.isFavorite ? '已收藏' : '收藏' }}
             </el-button>
+            <el-button
+              type="primary"
+              size="large"
+              :icon="Share"
+              @click="showShareCard = true"
+            >
+              分享
+            </el-button>
           </div>
         </div>
       </div>
@@ -185,6 +193,81 @@
       </div>
       <el-empty v-else description="菜品不存在" />
     </div>
+
+    <!-- 分享卡片对话框 -->
+    <el-dialog
+      v-model="showShareCard"
+      title="分享菜谱"
+      width="500px"
+      class="share-card-dialog"
+    >
+      <div ref="shareCardRef" class="share-card" v-if="dishesStore.currentDish">
+        <div class="share-card-header">
+          <img
+            :src="getImageUrl(dishesStore.currentDish.image)"
+            :alt="dishesStore.currentDish.name"
+            class="share-card-image"
+          />
+          <div class="share-card-title-section">
+            <h2 class="share-card-title">{{ dishesStore.currentDish.name }}</h2>
+            <p class="share-card-description">{{ dishesStore.currentDish.description }}</p>
+            <div class="share-card-meta-inline">
+              <span class="meta-item-small">
+                <el-icon><Clock /></el-icon>
+                {{ dishesStore.currentDish.cookingTime }}分钟
+              </span>
+              <span class="meta-item-small">
+                <el-icon><User /></el-icon>
+                {{ dishesStore.currentDish.servings }}人份
+              </span>
+              <span class="meta-item-small">{{ dishesStore.currentDish.difficulty }}</span>
+              <span class="meta-item-small">{{ dishesStore.currentDish.category }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 所需食材 -->
+        <div class="share-card-section" v-if="dishesStore.currentDish.ingredients.length > 0">
+          <h3 class="section-title-small">📋 所需食材</h3>
+          <div class="ingredients-list-compact">
+            <div
+              v-for="(ingredient, index) in dishesStore.currentDish.ingredients"
+              :key="index"
+              class="ingredient-item-compact"
+            >
+              {{ ingredient }}
+            </div>
+          </div>
+        </div>
+
+        <!-- 制作步骤 -->
+        <div class="share-card-section" v-if="dishesStore.currentDish.steps.length > 0">
+          <h3 class="section-title-small">👨‍🍳 制作步骤</h3>
+          <div class="steps-list-compact">
+            <div
+              v-for="(step, index) in dishesStore.currentDish.steps"
+              :key="index"
+              class="step-item-compact"
+            >
+              <span class="step-number-small">{{ index + 1 }}</span>
+              <span class="step-content-small">{{ step }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="share-card-footer">
+          <p class="footer-brand">智能菜谱 · 让做菜更简单</p>
+        </div>
+      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="showShareCard = false">关闭</el-button>
+          <el-button type="primary" :icon="Download" @click="saveShareCardAsImage">
+            保存为图片
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -207,7 +290,9 @@ import {
   ShoppingBag,
   Check,
   Document,
-  ChatLineRound
+  ChatLineRound,
+  Share,
+  Download
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -221,6 +306,8 @@ const newComment = ref('')
 const replyingTo = ref<number | null>(null)
 const replyContent = ref('')
 const allDishes = ref<Dish[]>([])
+const showShareCard = ref(false)
+const shareCardRef = ref<HTMLElement | null>(null)
 
 // 推荐菜品：同分类的其他菜品，最多显示4个
 const recommendedDishes = computed(() => {
@@ -382,6 +469,43 @@ const getDifficultyType = (difficulty: string) => {
     '困难': 'danger'
   }
   return map[difficulty] || 'info'
+}
+
+// 保存分享卡片为图片
+const saveShareCardAsImage = async () => {
+  if (!shareCardRef.value) return
+  
+  try {
+    const html2canvas = (await import('html2canvas')).default
+    
+    const canvas = await html2canvas(shareCardRef.value, {
+      backgroundColor: '#ffffff',
+      scale: 2,
+      logging: false
+    })
+    
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        ElMessage.error('生成图片失败')
+        return
+      }
+      
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      const dishName = dishesStore.currentDish?.name || '菜谱'
+      link.download = `${dishName}_分享卡片_${new Date().getTime()}.png`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+      
+      ElMessage.success('图片已保存')
+    }, 'image/png')
+  } catch (error) {
+    console.error('保存图片失败:', error)
+    ElMessage.error('保存图片失败')
+  }
 }
 </script>
 
@@ -764,6 +888,156 @@ const getDifficultyType = (difficulty: string) => {
 
 .comment-item:last-child {
   margin-bottom: 0;
+}
+
+/* 分享卡片样式 */
+.share-card-dialog :deep(.el-dialog__body) {
+  padding: 20px;
+}
+
+.share-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.share-card-header {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.share-card-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.share-card-title-section {
+  flex: 1;
+  min-width: 0;
+}
+
+.share-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 6px 0;
+  line-height: 1.4;
+}
+
+.share-card-description {
+  font-size: 13px;
+  color: #666;
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.share-card-meta-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.meta-item-small {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: #666;
+  padding: 2px 6px;
+  background: #f5f7fa;
+  border-radius: 3px;
+}
+
+.share-card-section {
+  margin-bottom: 12px;
+}
+
+.section-title-small {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 8px 0;
+}
+
+.ingredients-list-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ingredient-item-compact {
+  font-size: 12px;
+  color: #333;
+  line-height: 1.5;
+  padding: 3px 0;
+  padding-left: 16px;
+  position: relative;
+}
+
+.ingredient-item-compact::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #409eff;
+  font-weight: bold;
+}
+
+.steps-list-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.step-item-compact {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  color: #333;
+  line-height: 1.5;
+}
+
+.step-number-small {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #409eff;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.step-content-small {
+  flex: 1;
+}
+
+.share-card-footer {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #e0e0e0;
+  text-align: center;
+}
+
+.footer-brand {
+  margin: 0;
+  font-size: 12px;
+  color: #999;
 }
 </style>
 

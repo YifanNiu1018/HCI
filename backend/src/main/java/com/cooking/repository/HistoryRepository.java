@@ -3,6 +3,7 @@ package com.cooking.repository;
 import com.cooking.entity.History;
 import com.cooking.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -27,5 +28,9 @@ public interface HistoryRepository extends JpaRepository<History, Long> {
     List<History> findByUserAndNoteId(@Param("user") User user, @Param("noteId") Long noteId);
     
     void deleteByUser(User user);
+    
+    @Modifying
+    @Query("DELETE FROM History h WHERE h.note.id = :noteId")
+    void deleteByNoteId(@Param("noteId") Long noteId);
 }
 

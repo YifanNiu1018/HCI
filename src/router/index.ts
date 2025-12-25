@@ -52,6 +52,24 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: false }
   },
   {
+    path: '/discover/shop-by-dish',
+    name: 'ShopByDish',
+    component: () => import('@/views/discover/ShopByDish.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/discover/find-dishes',
+    name: 'FindDishesByIngredients',
+    component: () => import('@/views/discover/FindDishesByIngredients.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/discover/nutrition',
+    name: 'NutritionQuery',
+    component: () => import('@/views/discover/NutritionQuery.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
     path: '/categories',
     name: 'Categories',
     component: () => import('@/views/Categories.vue'),

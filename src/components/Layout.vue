@@ -4,9 +4,18 @@
       <div class="header-content">
         <div class="logo" @click="$router.push('/')">
           <el-icon><Food /></el-icon>
-          <span>美食厨房</span>
+          <span>厨房助手</span>
         </div>
         <div class="header-center">
+          <el-button
+            text
+            :icon="House"
+            @click="$router.push('/')"
+            class="nav-button"
+            :class="{ active: $route.path === '/' }"
+          >
+            首页
+          </el-button>
           <el-button
             text
             :icon="Food"
@@ -143,7 +152,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import { useMessagesStore } from '../stores/messages'
 import { getImageUrl } from '@/utils/image'
-import { Food, Search, User, ArrowDown, SwitchButton, Edit, Compass, Star, Document, EditPen, Clock, Message, Setting } from '@element-plus/icons-vue'
+import { Food, Search, User, ArrowDown, SwitchButton, Edit, Compass, Star, Document, EditPen, Clock, Message, Setting, House } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -224,7 +233,6 @@ const handleCommand = (command: string) => {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   padding: 0;
   height: 70px !important;
-  line-height: 70px;
   width: 100%;
   border-bottom: 1px solid #f0f0f0;
   position: sticky;
@@ -232,6 +240,8 @@ const handleCommand = (command: string) => {
   z-index: 1000;
   backdrop-filter: blur(10px);
   background: rgba(255, 255, 255, 0.98);
+  display: flex;
+  align-items: center;
 }
 
 .header-content {
@@ -243,15 +253,18 @@ const handleCommand = (command: string) => {
   align-items: center;
   width: 100%;
   gap: 12px;
+  height: 100%;
 }
 
 .header-center {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 2px;
   flex: 1;
   justify-content: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  min-width: 0;
+  margin: 0 16px;
 }
 
 @media (max-width: 768px) {
@@ -319,6 +332,7 @@ const handleCommand = (command: string) => {
   display: flex;
   align-items: center;
   gap: 16px;
+  flex-shrink: 0;
 }
 
 .search-input {
@@ -403,12 +417,14 @@ const handleCommand = (command: string) => {
   border: none;
   color: #666;
   font-size: 16px;
-  padding: 8px 16px;
+  padding: 8px 12px;
   transition: all 0.3s;
   display: flex;
   align-items: center;
   gap: 4px;
-  min-height: 44px; /* 触摸友好 */
+  height: 44px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 @media (max-width: 768px) {

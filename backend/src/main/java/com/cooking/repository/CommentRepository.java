@@ -17,5 +17,9 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findByParentOrderByCreatedAtAsc(Comment parent);
     
     void deleteByParent(Comment parent);
+    
+    void deleteByNote(Note note);
+    
+    List<Comment> findByNote(Note note);
 }
 
