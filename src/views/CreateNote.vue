@@ -223,12 +223,21 @@ const uploadHeaders = {
 }
 
 const handleUploadSuccess = (response: any) => {
-  if (typeof response === 'string') {
+  // 后端返回格式: { url: "/uploads/xxx.jpg" }
+  // Element Plus upload 组件的 on-success 回调接收的 response 是服务器返回的响应体
+  if (response && response.url) {
+    noteForm.image = response.url
+    ElMessage.success('图片上传成功')
+  } else if (typeof response === 'string') {
     noteForm.image = response
+    ElMessage.success('图片上传成功')
   } else if (response && response.body) {
     noteForm.image = response.body
+    ElMessage.success('图片上传成功')
+  } else {
+    console.error('Upload response format error:', response)
+    ElMessage.error('图片上传成功，但无法获取图片路径，请重试')
   }
-  ElMessage.success('图片上传成功')
 }
 
 const handleUploadError = () => {
