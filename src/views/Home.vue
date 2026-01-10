@@ -258,6 +258,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useDishesStore } from '@/stores/dishes'
 import { useNotesStore } from '@/stores/notes'
 import { useUserStore } from '@/stores/user'
+import { useMessagesStore } from '@/stores/messages'
 import { ElMessage } from 'element-plus'
 import { Clock, Star, StarFilled, User, TrendCharts, Refresh } from '@element-plus/icons-vue'
 import { getImageUrl } from '@/utils/image'
@@ -477,6 +478,7 @@ const handleToggleNoteFavorite = async (noteId: number, currentFavoriteStatus: b
     noteFavoriteLoading[noteId] = false
   }
 }
+
 </script>
 
 <style scoped>
@@ -634,11 +636,10 @@ const handleToggleNoteFavorite = async (noteId: number, currentFavoriteStatus: b
 }
 
 .hot-search-tag:hover {
-  background: #409eff;
+  background: #ff6b6b;
   color: #fff;
-  border-color: #409eff;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.25);
+  border-color: #ff6b6b;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.25);
 }
 
 .section-container {
@@ -685,7 +686,7 @@ const handleToggleNoteFavorite = async (noteId: number, currentFavoriteStatus: b
 }
 
 .note-card {
-  border-left: 3px solid #409eff;
+  border-left: 3px solid #ff6b6b;
 }
 
 .note-tags {
@@ -705,8 +706,7 @@ const handleToggleNoteFavorite = async (noteId: number, currentFavoriteStatus: b
 }
 
 .dish-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   border-color: #e0e0e0;
 }
 

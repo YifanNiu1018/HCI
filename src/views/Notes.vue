@@ -227,25 +227,25 @@ const handleToggleFavorite = async (noteId: number, isFavorite: boolean) => {
 
 <style scoped>
 .notes-container {
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 20px;
 }
 
 .notes-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .notes-header h1 {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
   color: #333;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .notes-header p {
-  font-size: 16px;
+  font-size: 14px;
   color: #666;
 }
 
@@ -253,8 +253,8 @@ const handleToggleFavorite = async (noteId: number, isFavorite: boolean) => {
 .notes-masonry {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  margin-bottom: 32px;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
 @media (max-width: 1200px) {
@@ -277,9 +277,9 @@ const handleToggleFavorite = async (noteId: number, isFavorite: boolean) => {
 
 .note-item {
   background: #fff;
-  border-radius: 12px;
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
   cursor: pointer;
   transition: all 0.3s;
   display: flex;
@@ -287,8 +287,8 @@ const handleToggleFavorite = async (noteId: number, isFavorite: boolean) => {
 }
 
 .note-item:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
 }
 
 .note-image-wrapper {
@@ -340,14 +340,14 @@ const handleToggleFavorite = async (noteId: number, isFavorite: boolean) => {
 }
 
 .note-content {
-  padding: 16px;
+  padding: 12px;
 }
 
 .note-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: #333;
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -357,15 +357,15 @@ const handleToggleFavorite = async (noteId: number, isFavorite: boolean) => {
 }
 
 .note-description {
-  font-size: 14px;
+  font-size: 13px;
   color: #666;
-  line-height: 1.6;
-  margin: 0 0 12px 0;
+  line-height: 1.5;
+  margin: 0 0 10px 0;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
@@ -407,11 +407,11 @@ const handleToggleFavorite = async (noteId: number, isFavorite: boolean) => {
 .pagination-wrapper {
   display: flex;
   justify-content: center;
-  margin-top: 32px;
-  padding: 20px;
+  margin-top: 24px;
+  padding: 16px;
   background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 </style>
 

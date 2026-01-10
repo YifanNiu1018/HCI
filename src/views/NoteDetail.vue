@@ -612,7 +612,7 @@ const toggleCommentForm = () => {
 
 .note-modal-container {
   width: 100%;
-  max-width: 900px;
+  max-width: 800px;
   max-height: 90vh;
   position: relative;
   animation: slideUp 0.3s ease;
@@ -655,7 +655,7 @@ const toggleCommentForm = () => {
 .note-content-wrapper {
   max-height: 90vh;
   overflow-y: auto;
-  padding: 24px;
+  padding: 20px;
 }
 
 /* 隐藏滚动条但保持滚动功能 */
@@ -671,10 +671,10 @@ const toggleCommentForm = () => {
 
 .detail-header {
   display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 24px;
-  margin-bottom: 32px;
-  padding-bottom: 24px;
+  grid-template-columns: 260px 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
   border-bottom: 1px solid #f0f0f0;
 }
 
@@ -700,9 +700,9 @@ const toggleCommentForm = () => {
 .note-author {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-  padding-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
   border-bottom: 1px solid #f0f0f0;
 }
 
@@ -713,7 +713,7 @@ const toggleCommentForm = () => {
 }
 
 .author-name {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: #333;
 }
@@ -724,18 +724,18 @@ const toggleCommentForm = () => {
 }
 
 .detail-title {
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 600;
   color: #333;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   line-height: 1.4;
 }
 
 .detail-description {
-  font-size: 15px;
+  font-size: 14px;
   color: #666;
-  line-height: 1.7;
-  margin-bottom: 16px;
+  line-height: 1.6;
+  margin-bottom: 12px;
   flex: 1;
 }
 
@@ -792,15 +792,15 @@ const toggleCommentForm = () => {
 
 .detail-main-layout {
   display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 24px;
+  grid-template-columns: 1fr 280px;
+  gap: 20px;
   align-items: start;
 }
 
 .detail-sections {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 24px;
 }
 
 .comments-sidebar {
@@ -812,11 +812,11 @@ const toggleCommentForm = () => {
 
 .comments-section {
   background: transparent;
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 10px;
+  padding: 16px;
   border: none;
   position: relative;
-  padding-bottom: 80px;
+  padding-bottom: 70px;
 }
 
 .comments-section .comments-list {
@@ -904,11 +904,11 @@ const toggleCommentForm = () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: #333;
-  margin: 0 0 16px 0;
-  padding-bottom: 12px;
+  margin: 0 0 12px 0;
+  padding-bottom: 10px;
   border-bottom: 2px solid #ff6b6b;
 }
 
@@ -917,16 +917,16 @@ const toggleCommentForm = () => {
   padding: 0;
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
 }
 
 .ingredients-list li {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
-  font-size: 14px;
+  padding: 6px 10px;
+  font-size: 13px;
   color: #333;
   background: #f8f9fa;
   border-radius: 6px;
@@ -947,8 +947,8 @@ const toggleCommentForm = () => {
 
 .steps-list li {
   display: flex;
-  gap: 16px;
-  padding: 20px 0;
+  gap: 14px;
+  padding: 16px 0;
   border-bottom: 1px solid #eee;
   counter-increment: step-counter;
 }
@@ -959,8 +959,8 @@ const toggleCommentForm = () => {
 
 .step-number {
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   background: #ff6b6b;
   color: #fff;
   border-radius: 50%;
@@ -968,13 +968,13 @@ const toggleCommentForm = () => {
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .step-content {
   flex: 1;
-  font-size: 15px;
-  line-height: 1.7;
+  font-size: 14px;
+  line-height: 1.6;
   color: #333;
   padding-top: 2px;
 }
